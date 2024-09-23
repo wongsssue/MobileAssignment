@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">FunParkApp</string>
+    <string name="menu_bar">Menu</string>
+    <string name="buy_ticket"> Buy Ticket</string>
+    <string name="reserve">My Reserve</string>
+    <string name="back_button">Back</string>
+    <string name="admin_ticket_screen_title">Ticket Management</string>
+    <string name="mainScreen">Home Screen</string>
+    <string name="ticket">Tickets</string>
+    <string name="ticket_type">Tickets</string>
+    <string name="oneDayPass">One Day Pass</string>
+    <string name="twoDayPass">Two Day Pass</string>
+    <string name="ultimatePass">Ultimate Pass (1 Year)</string>
+    <string name="shoppingCart">Shopping Cart</string>
+    <string name="checkOut">Checkout</string>
+    <string name="ticket_history">Ticket Purchased History</string>
+    <string name="payMethod">Payment Method</string>
+    <string name="none"></string>
+    <string name="credit_debit_card">Credit/Debit Card</string>
+    <string name="touchNGo">Touch‘n Go eWallet</string>
+    <string name="online_banking">Online Banking</string>
+    <string name="boost">Boost</string>
+    <string name="grabPay">GrabPay</string>
+    <string name="shopeePay">Shopee Pay</string>
+    <string name="paySuccess">Payment done Successfully</string>
+    <string name="ticket_receipt">Ticket Receipt</string>
+    <string name="return_home">Click here to return to home page</string>
+    <string name="adult">Adult</string>
+    <string name="adult_ticket_price">RM160.00</string>
+    <string name="adult_ticket_description">(Age 13 years old and above)</string>
+    <string name="childSenior">Child/Senior Citizen</string>
+    <string name="childSenior_ticket_price">RM135.00</string>
+    <string name="childSenior_ticket_description">(Age 12 years old and below for child and age 60 years old and above for senior)</string>>
+    <string name="save_time">Save time and skip queues by purchasing your tickets via app</string>
+</resources>
