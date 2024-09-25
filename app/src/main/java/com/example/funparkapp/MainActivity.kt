@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.funparkapp.ui.theme.FunParkAccessApp
+import com.example.funparkapp.ui.theme.FunParkAccessAppWithUserModule
 import com.example.funparkapp.ui.theme.FunParkAppTheme
 
 
@@ -15,7 +16,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FunParkAppTheme {
-               FunParkAccessApp()
+               FunParkAccessAppWithUserModule()
             }
         }
     }

@@ -32,4 +32,9 @@
     <string name="childSenior_ticket_price">RM135.00</string>
     <string name="childSenior_ticket_description">(Age 12 years old and below for child and age 60 years old and above for senior)</string>>
     <string name="save_time">Save time and skip queues by purchasing your tickets via app</string>
+    <string name="get_started">Getting Started</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="menu">Menu</string>
+    <string name="account">Account</string>
 </resources>
