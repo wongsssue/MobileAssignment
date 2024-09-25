@@ -9,13 +9,14 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 
-@Database(entities = [Ticket::class, TicketType::class, CartItem::class, PurchaseHistory::class, PaymentMethod:: class], version = 1)
+@Database(entities = [UserType::class, Ticket::class, TicketType::class, CartItem::class, PurchaseHistory::class, PaymentMethod:: class], version = 2)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract val ticketDao: TicketDao
     abstract val cartDao: CartItemDao
     abstract val ticketPurchasedDao: PurchasedTicketDao
     abstract val paymentMethodDao: PaymentMethodDao
+    abstract val userDao: UserDao
 
     companion object {
         @Volatile
@@ -23,14 +24,18 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
+
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "app_database"
-                ).build()
+                ).fallbackToDestructiveMigration() //REMOVE TO ALLOW DATA TO BE SAVED
+                    .build()
+
                 INSTANCE = instance
                 instance
             }
         }
     }
 }
+
