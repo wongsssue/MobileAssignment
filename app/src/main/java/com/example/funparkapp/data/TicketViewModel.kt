@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 class TicketViewModel(private val repository: TicketRepository) : ViewModel() {
 
     val allTickets: LiveData<List<Ticket>> = repository.getAllTickets()
-
+    val firebaseTickets: LiveData<List<Ticket>> = MutableLiveData()
     fun getTicketWithTicketType(ticketPlan: String): LiveData<List<TicketWithTicketType>> {
         Log.d("TicketViewModel", "Requesting ticket with types for: $ticketPlan")
         return repository.getTicketWithTicketType(ticketPlan)
@@ -22,6 +22,7 @@ class TicketViewModel(private val repository: TicketRepository) : ViewModel() {
     init {
         viewModelScope.launch {
             initializeData()
+            syncTicketsFromFirebase()
         }
     }
 
@@ -69,16 +70,27 @@ class TicketViewModel(private val repository: TicketRepository) : ViewModel() {
 
     fun insert(ticket: Ticket, ticketTypes: Map<String, Pair<Double, String>>) = viewModelScope.launch {
         repository.insertTicket(ticket)
-        ticketTypes.forEach { (type, value) ->
+
+        val ticketTypeEntities = ticketTypes.map { (type, value) ->
             val (price, description) = value
-            val ticketTypeEntity = TicketType(
+            TicketType(
                 ticketType = type,
                 price = price,
                 ticketDescription = description,
                 ticketPlan = ticket.ticketPlan
             )
-            repository.insertTicketType(ticketTypeEntity)
         }
+
+        ticketTypeEntities.forEach { type ->
+            repository.insertTicketType(type)
+        }
+
+        repository.syncTicketToFirebase(ticket, ticketTypeEntities)
+            .addOnSuccessListener {
+                viewModelScope.launch {
+                    syncTicketsFromFirebase()
+                }
+            }
     }
 
 
@@ -86,4 +98,9 @@ class TicketViewModel(private val repository: TicketRepository) : ViewModel() {
         repository.deleteTicket(ticket.ticketPlan)
     }
 
+    suspend fun syncTicketsFromFirebase() {
+        repository.syncTicketsFromFirebase().observeForever { tickets ->
+            (firebaseTickets as MutableLiveData).postValue(tickets)
+        }
+    }
 }

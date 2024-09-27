@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "190051925898",
+    "firebase_url": "https://ticketmodule-49e39-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "ticketmodule-49e39",
+    "storage_bucket": "ticketmodule-49e39.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:190051925898:android:997be31d3833a38b931273",
+        "android_client_info": {
+          "package_name": "com.example.funparkapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDk4oYWhcQWknopG9aFys1srMdD62JSW-k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

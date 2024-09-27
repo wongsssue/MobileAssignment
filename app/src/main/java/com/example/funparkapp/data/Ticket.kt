@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "tickets")
 data class Ticket(
     @PrimaryKey(autoGenerate = false)
-    val ticketPlan: String,
-    val ticketPlanDescription: String,
-    @DrawableRes val imageResId: Int
+    val ticketPlan: String = "",
+    val ticketPlanDescription: String = "",
+    @DrawableRes val imageResId: Int = 0
 )

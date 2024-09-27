@@ -28,6 +28,7 @@ import com.example.funparkapp.data.CartItemViewModel
 import com.example.funparkapp.data.PaymentMethodViewModel
 import com.example.funparkapp.data.PurchaseHistory
 import com.example.funparkapp.data.PurchaseHistoryViewModel
+import com.example.funparkapp.data.PurchasedItem
 import com.example.funparkapp.data.SharedViewModel
 
 @Composable
@@ -38,6 +39,7 @@ fun CheckoutScreen(
     paymentMethodViewModel: PaymentMethodViewModel,
     sharedViewModel: SharedViewModel
 ) {
+
     val cartItems by cartItemViewModel.allCartItems.observeAsState(emptyList())
     val totalPrice by cartItemViewModel.totalPrice.observeAsState(0.0)
     val scrollState = rememberScrollState()
@@ -66,8 +68,16 @@ fun CheckoutScreen(
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
         Spacer(modifier = Modifier.height(25.dp))
-        // Display cart items
-        cartItems.forEach { cartItem ->
+
+        val groupedCartItems = cartItems.groupBy { Pair(it.ticketPlan, it.ticketType) }
+
+        groupedCartItems.forEach { (ticketKey, items) ->
+            val ticketPlan = ticketKey.first
+            val ticketType = ticketKey.second
+            val totalQuantity = items.sumOf { it.quantity }
+            val price =
+                items.firstOrNull()?.price ?: 0.0
+
             Card(
                 modifier = Modifier.padding(bottom = 16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -75,14 +85,15 @@ fun CheckoutScreen(
                 Column(
                     modifier = Modifier.padding(10.dp)
                 ) {
-                    DetailRow(label = "Ticket Plan", value = cartItem.ticketPlan)
-                    DetailRow(label = "Ticket Type", value = cartItem.ticketType)
-                    DetailRow(label = "Price", value = "RM${cartItem.price.format(2)}")
-                    DetailRow(label = "Qty", value = cartItem.quantity.toString())
+                    DetailRow(label = "Ticket Plan", value = ticketPlan)
+                    DetailRow(label = "Ticket Type", value = ticketType)
+                    DetailRow(label = "Price per Ticket", value = "RM${price.format(2)}")
+                    DetailRow(label = "Qty", value = totalQuantity.toString())
+                    DetailRow(label = "Total", value = "RM${(price * totalQuantity).format(2)}")
                 }
-
             }
         }
+
         Card(colors = CardDefaults.cardColors(containerColor = Color.White)) {
             Column(
                 modifier = Modifier.padding(10.dp)
@@ -92,12 +103,13 @@ fun CheckoutScreen(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(16.dp)
                 )
-                PayRow(label = "Subtotal:", value =  "RM${subtotal.format(2)}")
-                PayRow(label = "Tax (5%):", value =  "RM${tax.format(2)}")
+                PayRow(label = "Subtotal:", value = "RM${subtotal.format(2)}")
+                PayRow(label = "Tax (5%):", value = "RM${tax.format(2)}")
                 PayRow(label = "Total:", value = "RM${total.format(2)}")
             }
         }
         Spacer(modifier = Modifier.height(25.dp))
+
         Card(colors = CardDefaults.cardColors(containerColor = Color.White)) {
             Column(
                 modifier = Modifier.padding(15.dp)
@@ -119,7 +131,7 @@ fun CheckoutScreen(
                         contentDescription = "Edit Payment Method",
                         modifier = Modifier
                             .size(24.dp)
-                            .clickable {  showPaymentMethodDialog = true }
+                            .clickable { showPaymentMethodDialog = true }
                     )
                 }
                 Row(
@@ -135,31 +147,37 @@ fun CheckoutScreen(
                 }
             }
         }
-
+        Spacer(modifier = Modifier.height(20.dp))
         Spacer(modifier = Modifier.weight(1f))
         Button(
             onClick = {
-                val generatedId = (100000..999999).random()
-                cartItems.forEach { cartItem ->
-                    val purchase = PurchaseHistory(
-                        id = generatedId.toLong(),
+                val generatedPurchaseId = (100000..999999).random().toLong()
+                val purchaseHistory = PurchaseHistory(
+                    id = generatedPurchaseId,
+                    pricePaid = total,
+                    purchasedDate = Date()
+                )
+                val purchasedItems = cartItems.map { cartItem ->
+                    PurchasedItem(
+                        itemId = 0L,
+                        id = generatedPurchaseId,
                         ticketPlan = cartItem.ticketPlan,
                         ticketType = cartItem.ticketType,
-                        qty = cartItem.quantity,
-                        pricePaid = total,
-                        purchasedDate = Date()
+                        qty = cartItem.quantity
                     )
-                    purchaseHistoryViewModel.insertPurchase(purchase) { generatedId ->
-                        sharedViewModel.ticketId = generatedId
-                        paySuccess()
-                    }
                 }
-                // Clear cart after order is placed
-                cartItems.forEach { cartItemViewModel.deleteCartItem(it) }
+
+                purchaseHistoryViewModel.insertPurchaseWithItems(
+                    purchaseHistory = purchaseHistory,
+                    purchasedItems = purchasedItems
+                ) { purchaseId ->
+                    sharedViewModel.ticketId = purchaseId
+                    paySuccess()
+
+                    cartItems.forEach { cartItemViewModel.deleteCartItem(it) }
+                }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
+            modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
             Text(text = "Place Order", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }

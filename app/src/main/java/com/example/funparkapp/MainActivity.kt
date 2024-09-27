@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import com.example.funparkapp.ui.theme.FunParkAccessApp
 import com.example.funparkapp.ui.theme.FunParkAccessAppWithUserModule
 import com.example.funparkapp.ui.theme.FunParkAppTheme
+import com.google.firebase.FirebaseApp
 
 
 class MainActivity : ComponentActivity() {
@@ -14,6 +15,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        FirebaseApp.initializeApp(this)
         setContent {
             FunParkAppTheme {
                FunParkAccessAppWithUserModule()

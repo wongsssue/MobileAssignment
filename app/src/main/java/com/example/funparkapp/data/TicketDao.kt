@@ -7,7 +7,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import androidx.room.Update
 
 @Dao
 interface TicketDao {
@@ -16,9 +15,6 @@ interface TicketDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addTicketType(ticketType: TicketType)
-
-    @Update
-    suspend fun updateTicket(ticket: Ticket)
 
     @Query("DELETE FROM tickets WHERE ticketPlan = :ticketPlan")
     suspend fun deleteTicket(ticketPlan: String)
@@ -36,4 +32,11 @@ interface TicketDao {
     @Transaction
     @Query("SELECT * FROM tickets WHERE ticketPlan = :ticketPlan")
     fun getTicketWithTicketType(ticketPlan: String): LiveData<List<TicketWithTicketType>>
+
+    @Query("SELECT * FROM ticket_type WHERE ticketPlan = :ticketPlan")
+    suspend fun getTicketTypesByPlan(ticketPlan: String): List<TicketType>
+
+    @Query("SELECT * FROM ticket_type WHERE ticketType = :ticketType AND ticketPlan = :ticketPlan LIMIT 1")
+    suspend fun findTicketType(ticketType: String, ticketPlan: String): TicketType?
+
 }

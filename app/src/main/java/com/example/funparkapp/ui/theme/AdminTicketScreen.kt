@@ -28,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -49,15 +50,18 @@ import com.example.funparkapp.data.Ticket
 fun AdminTicketScreen(
     ticketViewModel: TicketViewModel,
 ) {
-    val tickets by ticketViewModel.allTickets.observeAsState(emptyList())
-    var isFormVisible by remember { mutableStateOf(false) }
 
+    val firebaseTickets by ticketViewModel.firebaseTickets.observeAsState(emptyList())
+    var isFormVisible by remember { mutableStateOf(false) }
 
     val drawableImages = listOf(
         R.drawable.onedaypass,
         R.drawable.twodaypass,
         R.drawable.ultimatepass
     )
+    LaunchedEffect(Unit) {
+        ticketViewModel.syncTicketsFromFirebase()
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -88,7 +92,7 @@ fun AdminTicketScreen(
             }
 
             LazyColumn {
-                items(tickets) { ticket ->
+                items(firebaseTickets) { ticket ->
                     TicketCard(
                         ticketPlan = ticket.ticketPlan,
                         ticketViewModel = ticketViewModel,
@@ -199,7 +203,7 @@ fun TicketForm(
                             text = "Ticket Type Description",
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next
+                                imeAction = ImeAction.Done
                             ),
                             onValueChange = { ticketTypeDescription = it }
                         )

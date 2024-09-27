@@ -9,7 +9,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 
-@Database(entities = [UserType::class, Ticket::class, TicketType::class, CartItem::class, PurchaseHistory::class, PaymentMethod:: class], version = 2)
+@Database(entities = [UserType::class, Ticket::class, TicketType::class, CartItem::class, PurchaseHistory::class, PurchasedItem::class, PaymentMethod::class], version = 2)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract val ticketDao: TicketDao

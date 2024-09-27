@@ -29,38 +29,33 @@ import androidx.compose.runtime.livedata.observeAsState
 import com.example.funparkapp.data.PurchaseHistoryViewModel
 import com.example.funparkapp.data.SharedViewModel
 
-
 @Composable
 fun TicketPurchasedHistoryScreen(
     purchaseHistoryViewModel: PurchaseHistoryViewModel,
     sharedViewModel: SharedViewModel,
-    viewTicket: () -> Unit,
-    modifier: Modifier = Modifier.fillMaxSize()
+    viewTicket: () -> Unit
 ) {
     val allTickets by purchaseHistoryViewModel.allPurchasedTickets.observeAsState(emptyList())
 
     LazyColumn(modifier = Modifier.padding(15.dp)) {
-        items(allTickets) { ticket ->
+        items(allTickets) { purchaseHistory ->
             TicketDetailCard(
-                ticketId = ticket.id,
-                ticketPlan = ticket.ticketPlan,
-                purchasedDate = ticket.purchasedDate,
-                quantity = ticket.qty,
-                pricePaid = ticket.pricePaid,
+                ticketId = purchaseHistory.purchase.id,
+                purchasedDate = purchaseHistory.purchase.purchasedDate,
+                pricePaid = purchaseHistory.purchase.pricePaid,
                 viewTicket = {
-                    sharedViewModel.ticketId = ticket.id
+                    sharedViewModel.ticketId = purchaseHistory.purchase.id
                     viewTicket()
                 }
             )
         }
     }
 }
+
 @Composable
 fun TicketDetailCard(
     ticketId: Long,
-    ticketPlan: String,
     purchasedDate: Date,
-    quantity: Int,
     pricePaid: Double,
     viewTicket: () -> Unit
 ) {
@@ -83,24 +78,10 @@ fun TicketDetailCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = ticketPlan,
+                    text = "Ticket ID: $ticketId",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    modifier = Modifier.padding(bottom = 10.dp)
-                )
-            }
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Ticket ID: $ticketId",
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(bottom = 5.dp)
-                )
-                Text(
-                    text = "Quantity: $quantity",
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(bottom = 5.dp)
+                    modifier = Modifier.padding(bottom = 15.dp, top = 10.dp)
                 )
                 Text(
                     text = "Price Paid: RM${"%.2f".format(pricePaid)}",
