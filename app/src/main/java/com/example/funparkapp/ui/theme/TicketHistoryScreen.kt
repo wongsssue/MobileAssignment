@@ -33,8 +33,7 @@ import com.example.funparkapp.data.SharedViewModel
 fun TicketPurchasedHistoryScreen(
     purchaseHistoryViewModel: PurchaseHistoryViewModel,
     sharedViewModel: SharedViewModel,
-    viewTicket: () -> Unit,
-    modifier: Modifier = Modifier.fillMaxSize()
+    viewTicket: () -> Unit
 ) {
     val allTickets by purchaseHistoryViewModel.allPurchasedTickets.observeAsState(emptyList())
 
@@ -42,7 +41,6 @@ fun TicketPurchasedHistoryScreen(
         items(allTickets) { purchaseHistory ->
             TicketDetailCard(
                 ticketId = purchaseHistory.purchase.id,
-                ticketPlan = purchaseHistory.purchase.ticketPlan,
                 purchasedDate = purchaseHistory.purchase.purchasedDate,
                 pricePaid = purchaseHistory.purchase.pricePaid,
                 viewTicket = {
@@ -57,7 +55,6 @@ fun TicketPurchasedHistoryScreen(
 @Composable
 fun TicketDetailCard(
     ticketId: Long,
-    ticketPlan: String,
     purchasedDate: Date,
     pricePaid: Double,
     viewTicket: () -> Unit
@@ -81,19 +78,10 @@ fun TicketDetailCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = ticketPlan,
+                    text = "Ticket ID: $ticketId",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    modifier = Modifier.padding(bottom = 10.dp)
-                )
-            }
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Ticket ID: $ticketId",
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(bottom = 5.dp)
+                    modifier = Modifier.padding(bottom = 15.dp, top = 10.dp)
                 )
                 Text(
                     text = "Price Paid: RM${"%.2f".format(pricePaid)}",

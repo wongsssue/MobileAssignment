@@ -8,6 +8,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +34,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+
 @Composable
 fun TicketReceiptScreen(
     purchaseHistoryViewModel: PurchaseHistoryViewModel,
@@ -46,8 +49,6 @@ fun TicketReceiptScreen(
         val purchase = purchaseWithTickets.purchase
         val ticketItems = purchaseWithTickets.purchasedItems
         val qrCodeBitmap = generateQRCode(ticketID.toString())
-        val validTo = calculateValidToDate(purchase.ticketPlan, purchase.purchasedDate)
-
         Column(
             modifier = Modifier
                 .padding(16.dp)
@@ -69,16 +70,29 @@ fun TicketReceiptScreen(
                 Text(text = ticketID.toString(), fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.height(20.dp))
-            TicketDetailRow(label = "Valid From", value = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(purchase.purchasedDate))
-            TicketDetailRow(label = "Valid To", value = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(validTo))
-            TicketDetailRow(label = "Ticket Plan", value = purchase.ticketPlan)
 
             ticketItems.forEach { ticketItem ->
-                TicketDetailRow(label = "Ticket Type", value = ticketItem.ticketType)
-                TicketDetailRow(label = "Qty", value = ticketItem.qty.toString())
+                Card(modifier = Modifier
+                    .padding(15.dp)
+                    .fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA))
+                ){
+                    val validTo = calculateValidToDate(ticketItem.ticketPlan, purchase.purchasedDate)
+                    TicketDetailRow(label = "Valid From", value = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(purchase.purchasedDate))
+                    TicketDetailRow(label = "Valid To", value = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(validTo))
+                    TicketDetailRow(label = "Ticket Plan", value = ticketItem.ticketPlan)
+                    TicketDetailRow(label = "Ticket Type", value = ticketItem.ticketType)
+                    TicketDetailRow(label = "Qty", value = ticketItem.qty.toString())
+                }
+                Spacer(modifier = Modifier.height(10.dp))
             }
-
-            TicketDetailRow(label = "Total Price Paid", value = "RM${purchase.pricePaid.format(2)}")
+            Card (modifier = Modifier
+                .padding(15.dp)
+                .fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA))
+            ){
+                TicketDetailRow(label = "Total Price Paid", value = "RM${purchase.pricePaid.format(2)}")
+            }
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(stringResource(R.string.return_home), fontWeight = FontWeight.Light)
@@ -91,7 +105,8 @@ fun TicketReceiptScreen(
                 Text(text = "Home", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
         }
-    } ?: run {
+    }
+        ?: run {
         Text("Loading...")
     }
 }
@@ -133,7 +148,7 @@ fun calculateValidToDate(ticketPlan: String, payDate: Date): Date {
     when (ticketPlan) {
         "One Day Pass" -> calendar.add(java.util.Calendar.DAY_OF_YEAR, 1)
         "Two Day Pass" -> calendar.add(java.util.Calendar.DAY_OF_YEAR, 2)
-        "One Year Pass" -> calendar.add(java.util.Calendar.YEAR, 1)
+        "Ultimate Pass (1 Year)" -> calendar.add(java.util.Calendar.YEAR, 1)
     }
     return calendar.time
 }

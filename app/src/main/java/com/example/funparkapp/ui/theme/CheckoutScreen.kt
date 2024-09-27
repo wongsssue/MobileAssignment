@@ -110,7 +110,6 @@ fun CheckoutScreen(
         }
         Spacer(modifier = Modifier.height(25.dp))
 
-        // Payment method section remains unchanged
         Card(colors = CardDefaults.cardColors(containerColor = Color.White)) {
             Column(
                 modifier = Modifier.padding(15.dp)
@@ -148,22 +147,21 @@ fun CheckoutScreen(
                 }
             }
         }
-
+        Spacer(modifier = Modifier.height(20.dp))
         Spacer(modifier = Modifier.weight(1f))
         Button(
             onClick = {
                 val generatedPurchaseId = (100000..999999).random().toLong()
                 val purchaseHistory = PurchaseHistory(
                     id = generatedPurchaseId,
-                    ticketPlan = cartItems.firstOrNull()?.ticketPlan ?: "",
                     pricePaid = total,
                     purchasedDate = Date()
                 )
-
                 val purchasedItems = cartItems.map { cartItem ->
                     PurchasedItem(
                         itemId = 0L,
                         id = generatedPurchaseId,
+                        ticketPlan = cartItem.ticketPlan,
                         ticketType = cartItem.ticketType,
                         qty = cartItem.quantity
                     )
@@ -175,12 +173,11 @@ fun CheckoutScreen(
                 ) { purchaseId ->
                     sharedViewModel.ticketId = purchaseId
                     paySuccess()
+
                     cartItems.forEach { cartItemViewModel.deleteCartItem(it) }
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
+            modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
             Text(text = "Place Order", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
