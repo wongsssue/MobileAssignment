@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.StateFlow
 
 class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
-    val userState = MutableStateFlow<UserType?>(null) // To hold the current user
+    val userState = MutableStateFlow<UserType?>(null)
+    private val _loggedInUser = MutableStateFlow<UserType?>(null)
+    val loggedInUser: StateFlow<UserType?> get() = _loggedInUser
 
     fun registerUser(username: String, email: String, password: String) {
         viewModelScope.launch {
@@ -50,5 +52,25 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
     fun signOut() {
         // Add sign-out logic here, e.g., clear userState
         userState.value = null
+    }
+
+    fun login(username: String, password: String, onSuccess: () -> Unit, onError: () -> Unit) {
+        viewModelScope.launch {
+            val user = userRepository.getUserByUsername(username)
+            if (user != null && user.password == password) {
+                _loggedInUser.value = user // Set the logged-in user
+                onSuccess()
+            } else {
+                onError()
+            }
+        }
+    }
+
+    fun logout() {
+        _loggedInUser.value = null
+    }
+
+    fun getLoggedInUser(): UserType? {
+        return _loggedInUser.value
     }
 }

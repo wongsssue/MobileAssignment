@@ -53,18 +53,19 @@ fun LoginScreen(
 
             Button(
                 onClick = {
-                    coroutineScope.launch { // Use coroutineScope here
-                        val user = userViewModel.getUserByUsername(username)
-                        if (user != null &&user.password == password) {
-                            navController.navigate(FunParkScreen1.MainMenu.name)
-                        } else {
-                            showError = true
-                        }
-                    }
+                    userViewModel.login(username, password, {
+                        navController.navigate(FunParkScreen1.MainMenu.name) // Navigate if successful
+                    }, {
+                        showError = true // Show error if login fails
+                    })
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA500))
             ) {
                 Text("Login", color = Color.White)
+            }
+
+            if (showError) {
+                Text("Invalid username or password", color = Color.Red)
             }
 
 

@@ -24,6 +24,13 @@ fun AccountScreen(
     onPasswordChange: (String) -> Unit, // Modified to accept new password
     onSignOut: () -> Unit
 ) {
+    val currentUser by viewModel.loggedInUser.collectAsState()
+
+    if (currentUser == null) {
+        Text("User not logged in")
+        return
+    }
+
     var showUsernameDialog by remember { mutableStateOf(false) }
     var newUsername by remember { mutableStateOf("") }
     var usernameError by remember { mutableStateOf("") }
@@ -52,7 +59,7 @@ fun AccountScreen(
             )
             Spacer(modifier = Modifier.width(16.dp)) // Space between icon and text
             Column {
-                Text(text = user.username, style = MaterialTheme.typography.titleLarge)
+                Text(text = currentUser!!.username, style = MaterialTheme.typography.titleLarge)
                 Text(text = "Points: ${user.points}", style = MaterialTheme.typography.bodyMedium)
             }
         }
@@ -118,8 +125,11 @@ fun AccountScreen(
         ) {
             Spacer(modifier = Modifier.width(8.dp))
             Button(
-                onClick = onSignOut,
-                modifier = Modifier.weight(1f),
+                onClick = {
+                    viewModel.logout() // Clear the user state on sign out
+                    onSignOut()
+                },
+                modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
                 Text("Sign Out")

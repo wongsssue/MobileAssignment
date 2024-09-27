@@ -70,7 +70,8 @@
         Login(title = R.string.login),          // Add Login
         Register(title = R.string.register),
         Menu(title = R.string.menu),
-        Account(title = R.string.account)
+        Account(title = R.string.account),
+        Redeem(title = R.string.redeem)
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -116,14 +117,14 @@
         navController: NavHostController = rememberNavController(),
         context: Context = LocalContext.current
     ) {
-        Log.i("FunParkAccessAppWithUserModule","Started")
+
         // Initialize coroutine scope
         val coroutineScope = rememberCoroutineScope()
 
-        // Initialize firebase reference
         val firebaseDatabase: DatabaseReference = FirebaseDatabase.getInstance().getReference("tickets")
         val firebaseDatabase2: DatabaseReference = FirebaseDatabase.getInstance().getReference("ticketPurchased")
 
+        Log.i("FunParkAccessAppWithUserModule","Started")
         // Initialize the database and repository
         val appDatabase = remember { AppDatabase.getDatabase(context) }
         val ticketRepository = remember { TicketRepository(appDatabase.ticketDao, firebaseDatabase, coroutineScope) }
@@ -166,6 +167,7 @@
             currentRoute == FunParkScreen1.Register.name -> FunParkScreen1.Register
             currentRoute == FunParkScreen1.Menu.name -> FunParkScreen1.Menu
             currentRoute == FunParkScreen1.Account.name -> FunParkScreen1.Account
+            currentRoute == FunParkScreen1.Redeem.name -> FunParkScreen1.Redeem
             else -> FunParkScreen1.MainMenu
         }
 
@@ -184,6 +186,19 @@
                 startDestination = FunParkScreen1.GetStarted.name,
                 modifier = Modifier.padding(innerPadding)
             ){
+
+                composable(route = FunParkScreen1.Redeem.name) {
+                    // Here, you'll pass the required parameters
+                    RedeemScreen(
+                        ticketViewModel = ticketViewModel,
+                        onClaimTicket = { ticket ->
+                            // Handle the ticket claiming logic here
+                            // For example, you can navigate to a confirmation screen
+                            // navController.navigate(FunParkScreen1.Confirmation.name)
+                        }
+                    )
+
+                }
 
                 composable(route = FunParkScreen1.Account.name) {
                     val user = userViewModel.userState.collectAsState().value

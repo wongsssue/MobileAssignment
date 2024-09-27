@@ -20,10 +20,11 @@ import com.example.funparkapp.R
 data class MenuItem(val title: String, val route: String? = null, val icon: Int? = null)
 
 val menuItems = listOf(
+    MenuItem("Home", FunParkScreen1.MainMenu.name),
     MenuItem("Account", FunParkScreen1.Account.name),
     MenuItem("Reservations", FunParkScreen1.TicketMenu.name), // Example: Navigate to TicketMenu for reservations
     MenuItem("Tickets", FunParkScreen1.TicketMenu.name),
-    MenuItem("Redeem"), // No route for this item yet
+    MenuItem("Redeem", FunParkScreen1.Redeem.name),
     MenuItem("Map"),    // No route for this item yet
     MenuItem("Souvenirs"), // No route for this item yet
     MenuItem("Purchase History", FunParkScreen1.TicketHistory.name) // Fixed missing comma
