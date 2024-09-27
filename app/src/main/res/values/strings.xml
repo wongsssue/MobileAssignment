@@ -38,4 +38,5 @@
     <string name="menu">Menu</string>
     <string name="account">Account</string>
     <string name="redeem">Redeem</string>
+    <string name="redeem_checkout">Redemption Checkout</string>
 </resources>

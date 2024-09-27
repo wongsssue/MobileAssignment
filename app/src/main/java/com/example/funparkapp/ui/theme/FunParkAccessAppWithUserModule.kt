@@ -29,10 +29,12 @@
     import androidx.compose.ui.unit.sp
     import androidx.lifecycle.viewmodel.compose.viewModel
     import androidx.navigation.NavHostController
+    import androidx.navigation.NavType
     import androidx.navigation.compose.NavHost
     import androidx.navigation.compose.composable
     import androidx.navigation.compose.currentBackStackEntryAsState
     import androidx.navigation.compose.rememberNavController
+    import androidx.navigation.navArgument
     import com.example.funparkapp.R
     import com.example.funparkapp.data.AppDatabase
     import com.example.funparkapp.data.CartItemRepository
@@ -71,7 +73,8 @@
         Register(title = R.string.register),
         Menu(title = R.string.menu),
         Account(title = R.string.account),
-        Redeem(title = R.string.redeem)
+        Redeem(title = R.string.redeem),
+        RedeemCheckout(title = R.string.redeem_checkout)
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -168,6 +171,7 @@
             currentRoute == FunParkScreen1.Menu.name -> FunParkScreen1.Menu
             currentRoute == FunParkScreen1.Account.name -> FunParkScreen1.Account
             currentRoute == FunParkScreen1.Redeem.name -> FunParkScreen1.Redeem
+            currentRoute == FunParkScreen1.RedeemCheckout.name -> FunParkScreen1.RedeemCheckout
             else -> FunParkScreen1.MainMenu
         }
 
@@ -188,7 +192,6 @@
             ){
 
                 composable(route = FunParkScreen1.Redeem.name) {
-                    // Here, you'll pass the required parameters
                     RedeemScreen(
                         ticketViewModel = ticketViewModel,
                         onClaimTicket = { ticket ->
@@ -197,7 +200,6 @@
                             // navController.navigate(FunParkScreen1.Confirmation.name)
                         }
                     )
-
                 }
 
                 composable(route = FunParkScreen1.Account.name) {

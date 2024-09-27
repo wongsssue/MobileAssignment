@@ -71,6 +71,15 @@ class TicketViewModel(private val repository: TicketRepository) : ViewModel() {
         }
     }
 
+    fun getTicketByTypeId(ticketTypeId: Long?): Ticket? {
+        return if (ticketTypeId != null) {
+            allTicketsWithTypes.value?.find { ticketWithType ->
+                ticketWithType.ticketTypes.any { type -> type.ticketTypeId == ticketTypeId }
+            }?.ticket
+        } else {
+            null // Return null if ticketTypeId is invalid
+        }
+    }
 
 
     fun insert(ticket: Ticket, ticketTypes: Map<String, Pair<Double, String>>, pointsRequired: Int) = viewModelScope.launch {
