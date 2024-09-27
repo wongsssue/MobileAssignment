@@ -3,7 +3,6 @@ package com.example.funparkapp.ui.theme
 
 import TicketViewModel
 import android.content.Context
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,6 +16,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -45,6 +45,9 @@ import com.example.funparkapp.data.PurchaseHistoryViewModelFactory
 import com.example.funparkapp.data.SharedViewModel
 import com.example.funparkapp.data.TicketRepository
 import com.example.funparkapp.data.TicketViewModelFactory
+import com.google.firebase.FirebaseApp
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 
 enum class FunParkScreen(@StringRes val title: Int){
@@ -102,12 +105,18 @@ fun FunParkAccessApp(
     navController: NavHostController = rememberNavController(),
     context: Context = LocalContext.current
 ) {
-    Log.i("FunParkAccessApp","Started")
+    // Initialize coroutine scope
+    val coroutineScope = rememberCoroutineScope()
+
+    // Initialize firebase reference
+    val firebaseDatabase: DatabaseReference = FirebaseDatabase.getInstance().getReference("tickets")
+    val firebaseDatabase2: DatabaseReference = FirebaseDatabase.getInstance().getReference("ticketPurchased")
+
     // Initialize the database and repository
     val appDatabase = remember { AppDatabase.getDatabase(context) }
-    val ticketRepository = remember { TicketRepository(appDatabase.ticketDao) }
+    val ticketRepository = remember { TicketRepository(appDatabase.ticketDao, firebaseDatabase, coroutineScope) }
     val cartRepository = remember { CartItemRepository(appDatabase.cartDao) }
-    val purchaseHistoryRepository = remember { PurchaseHistoryRepository(appDatabase.ticketPurchasedDao) }
+    val purchaseHistoryRepository = remember { PurchaseHistoryRepository(appDatabase.ticketPurchasedDao, firebaseDatabase2) }
     val paymentMethodRepository = remember { PaymentMethodRepository(appDatabase.paymentMethodDao) }
 
     // Create ViewModelFactory instances

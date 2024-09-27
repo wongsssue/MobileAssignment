@@ -9,8 +9,8 @@ import androidx.room.Index
 data class TicketType(
     @PrimaryKey(autoGenerate = true)
     val ticketTypeId: Long = 0,
-    val ticketType: String,
-    val ticketDescription: String,
-    val price: Double,
-    val ticketPlan:String
+    val ticketType: String = "",
+    val ticketDescription: String = "",
+    val price: Double = 0.0,
+    val ticketPlan:String = ""
 )

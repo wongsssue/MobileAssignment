@@ -29,7 +29,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.lazy.items
-
+import androidx.compose.runtime.LaunchedEffect
 
 
 @Composable
@@ -39,7 +39,11 @@ fun SelectTicketScreen(
     goToSpecificTicketPlan: (String) -> Unit
 ) {
 
-    val tickets by ticketViewModel.allTickets.observeAsState(emptyList())
+//    val tickets by ticketViewModel.allTickets.observeAsState(emptyList())
+    val firebaseTickets by ticketViewModel.firebaseTickets.observeAsState(emptyList())
+    LaunchedEffect(Unit) {
+        ticketViewModel.syncTicketsFromFirebase()
+    }
     Column(modifier = Modifier
         .fillMaxSize()
        ) {
@@ -85,7 +89,7 @@ fun SelectTicketScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            items(tickets) { ticket ->
+            items(firebaseTickets) { ticket ->
                 TicketCard(
                     ticketPlan = ticket.ticketPlan,
                     ticketImg = ticket.imageResId,

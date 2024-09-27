@@ -29,7 +29,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import com.example.funparkapp.data.PurchaseHistoryViewModel
 import com.example.funparkapp.data.SharedViewModel
 
-
 @Composable
 fun TicketPurchasedHistoryScreen(
     purchaseHistoryViewModel: PurchaseHistoryViewModel,
@@ -40,27 +39,26 @@ fun TicketPurchasedHistoryScreen(
     val allTickets by purchaseHistoryViewModel.allPurchasedTickets.observeAsState(emptyList())
 
     LazyColumn(modifier = Modifier.padding(15.dp)) {
-        items(allTickets) { ticket ->
+        items(allTickets) { purchaseHistory ->
             TicketDetailCard(
-                ticketId = ticket.id,
-                ticketPlan = ticket.ticketPlan,
-                purchasedDate = ticket.purchasedDate,
-                quantity = ticket.qty,
-                pricePaid = ticket.pricePaid,
+                ticketId = purchaseHistory.purchase.id,
+                ticketPlan = purchaseHistory.purchase.ticketPlan,
+                purchasedDate = purchaseHistory.purchase.purchasedDate,
+                pricePaid = purchaseHistory.purchase.pricePaid,
                 viewTicket = {
-                    sharedViewModel.ticketId = ticket.id
+                    sharedViewModel.ticketId = purchaseHistory.purchase.id
                     viewTicket()
                 }
             )
         }
     }
 }
+
 @Composable
 fun TicketDetailCard(
     ticketId: Long,
     ticketPlan: String,
     purchasedDate: Date,
-    quantity: Int,
     pricePaid: Double,
     viewTicket: () -> Unit
 ) {
@@ -94,11 +92,6 @@ fun TicketDetailCard(
             ) {
                 Text(
                     text = "Ticket ID: $ticketId",
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(bottom = 5.dp)
-                )
-                Text(
-                    text = "Quantity: $quantity",
                     fontSize = 14.sp,
                     modifier = Modifier.padding(bottom = 5.dp)
                 )

@@ -7,10 +7,8 @@ import java.util.Date
 @Entity(tableName = "ticket_purchased")
 data class PurchaseHistory(
     @PrimaryKey
-    val id: Long,
-    val ticketPlan: String,
-    val ticketType: String,
-    val qty: Int,
-    val pricePaid: Double,
-    val purchasedDate: Date
+    val id: Long = 0L,
+    val ticketPlan: String = "",
+    val pricePaid: Double = 0.0,
+    val purchasedDate: Date = Date()
 )

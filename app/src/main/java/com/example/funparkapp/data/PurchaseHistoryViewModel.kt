@@ -6,17 +6,16 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 class PurchaseHistoryViewModel(private val repository: PurchaseHistoryRepository) : ViewModel() {
+    val allPurchasedTickets: LiveData<List<PurchaseWithTickets>> = repository.allPurchasedTickets
 
-    val allPurchasedTickets: LiveData<List<PurchaseHistory>> = repository.allPurchasedTickets
-
-    fun getPurchaseByTicketID(ticketID: Long): LiveData<PurchaseHistory> {
-        return repository.getPurchaseByTicketID(ticketID)
+    fun getPurchaseWithTicketsById(ticketID: Long): LiveData<PurchaseWithTickets> {
+        return repository.getPurchaseWithTicketsById(ticketID)
     }
 
-    fun insertPurchase(purchaseHistory: PurchaseHistory, onResult: (Long) -> Unit) {
+    fun insertPurchaseWithItems(purchaseHistory: PurchaseHistory, purchasedItems: List<PurchasedItem>, onResult: (Long) -> Unit) {
         viewModelScope.launch {
-            val id = repository.insertPurchase(purchaseHistory)
-            onResult(id)
+            repository.insertPurchaseWithItems(purchaseHistory, purchasedItems)
+            onResult(purchaseHistory.id)
         }
     }
 }

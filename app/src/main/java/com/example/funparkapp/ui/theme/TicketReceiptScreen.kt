@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +32,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-
 @Composable
 fun TicketReceiptScreen(
     purchaseHistoryViewModel: PurchaseHistoryViewModel,
@@ -38,16 +39,20 @@ fun TicketReceiptScreen(
     homePageClick: () -> Unit = {}
 ) {
     val ticketID = sharedViewModel.ticketId ?: return
-    val purchaseHistory by purchaseHistoryViewModel.getPurchaseByTicketID(ticketID).observeAsState()
+    val purchaseWithTickets by purchaseHistoryViewModel.getPurchaseWithTicketsById(ticketID).observeAsState()
+    val scrollState = rememberScrollState()
 
-    purchaseHistory?.let { purchase ->
-        val validTo = calculateValidToDate(purchase.ticketPlan, purchase.purchasedDate)
+    purchaseWithTickets?.let { purchaseWithTickets ->
+        val purchase = purchaseWithTickets.purchase
+        val ticketItems = purchaseWithTickets.purchasedItems
         val qrCodeBitmap = generateQRCode(ticketID.toString())
+        val validTo = calculateValidToDate(purchase.ticketPlan, purchase.purchasedDate)
 
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .verticalScroll(scrollState),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -67,10 +72,15 @@ fun TicketReceiptScreen(
             TicketDetailRow(label = "Valid From", value = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(purchase.purchasedDate))
             TicketDetailRow(label = "Valid To", value = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(validTo))
             TicketDetailRow(label = "Ticket Plan", value = purchase.ticketPlan)
-            TicketDetailRow(label = "Ticket Type", value = purchase.ticketType)
-            TicketDetailRow(label = "Price Paid", value = "RM${purchase.pricePaid.format(2)}")
-            TicketDetailRow(label = "Qty", value = purchase.qty.toString())
+
+            ticketItems.forEach { ticketItem ->
+                TicketDetailRow(label = "Ticket Type", value = ticketItem.ticketType)
+                TicketDetailRow(label = "Qty", value = ticketItem.qty.toString())
+            }
+
+            TicketDetailRow(label = "Total Price Paid", value = "RM${purchase.pricePaid.format(2)}")
             Spacer(modifier = Modifier.height(20.dp))
+
             Text(stringResource(R.string.return_home), fontWeight = FontWeight.Light)
             Spacer(modifier = Modifier.height(2.dp))
             Button(

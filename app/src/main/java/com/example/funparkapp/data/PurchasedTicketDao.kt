@@ -5,16 +5,33 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 
 @Dao
 interface PurchasedTicketDao {
+
+    @Transaction
     @Query("SELECT * FROM ticket_purchased")
-    fun getTicketPurchased(): LiveData<List<PurchaseHistory>>
+    fun getAllPurchasesWithTickets(): LiveData<List<PurchaseWithTickets>>
 
+    @Transaction
     @Query("SELECT * FROM ticket_purchased WHERE id = :ticketID")
-    fun getPurchaseByTicketID(ticketID: Long): LiveData<PurchaseHistory>
+    fun getPurchaseWithTicketsById(ticketID: Long): LiveData<PurchaseWithTickets>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPurchase(purchase: PurchaseHistory):Long
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertPurchase(purchase: PurchaseHistory): Long
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertPurchasedItem(purchasedItem: PurchasedItem): Long
+
+    @Transaction
+    suspend fun insertPurchaseWithItems(
+        purchase: PurchaseHistory,
+        items: List<PurchasedItem>
+    ) {
+        val purchaseId = insertPurchase(purchase)
+        for (item in items) {
+            insertPurchasedItem(item.copy(id = purchaseId))
+        }
+    }
 }
