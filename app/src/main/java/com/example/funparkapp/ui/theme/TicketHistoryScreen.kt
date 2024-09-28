@@ -1,8 +1,10 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.funparkapp.ui.theme
 
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,9 +27,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.example.funparkapp.data.PurchaseHistoryViewModel
 import com.example.funparkapp.data.SharedViewModel
+
 
 @Composable
 fun TicketPurchasedHistoryScreen(
@@ -36,21 +48,93 @@ fun TicketPurchasedHistoryScreen(
     viewTicket: () -> Unit
 ) {
     val allTickets by purchaseHistoryViewModel.allPurchasedTickets.observeAsState(emptyList())
+    var sortOption by remember { mutableStateOf("Most Recent") }
 
-    LazyColumn(modifier = Modifier.padding(15.dp)) {
-        items(allTickets) { purchaseHistory ->
-            TicketDetailCard(
-                ticketId = purchaseHistory.purchase.id,
-                purchasedDate = purchaseHistory.purchase.purchasedDate,
-                pricePaid = purchaseHistory.purchase.pricePaid,
-                viewTicket = {
-                    sharedViewModel.ticketId = purchaseHistory.purchase.id
-                    viewTicket()
-                }
-            )
+    val sortedTickets = when (sortOption) {
+        "Most Recent" -> allTickets.sortedByDescending { it.purchase.purchasedDate }
+        "Oldest" -> allTickets.sortedBy { it.purchase.purchasedDate }
+        else -> allTickets
+    }
+
+    Column(modifier = Modifier.padding(15.dp)) {
+        SortOptionsDropdown(sortOption = sortOption, onOptionSelected = { sortOption = it })
+        LazyColumn(modifier = Modifier.padding(top = 15.dp)) {
+            items(sortedTickets) { purchaseHistory ->
+                TicketDetailCard(
+                    ticketId = purchaseHistory.purchase.id,
+                    purchasedDate = purchaseHistory.purchase.purchasedDate,
+                    pricePaid = purchaseHistory.purchase.pricePaid,
+                    viewTicket = {
+                        sharedViewModel.ticketId = purchaseHistory.purchase.id
+                        viewTicket()
+                    }
+                )
+            }
         }
     }
 }
+
+
+@Composable
+fun SortOptionsDropdown(sortOption: String, onOptionSelected: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val sortOptions = listOf("Most Recent", "Oldest")
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 0.dp)
+    ) {
+        TextField(
+            value = sortOption,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Sort by date") },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor()
+                .padding(14.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color(0xFFF0F0F0),
+                unfocusedContainerColor = Color(0xFFF0F0F0),
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Gray
+            )
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .background(Color.White, shape = RoundedCornerShape(10.dp))
+        ) {
+            sortOptions.forEach { option ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = option,
+                            fontSize = 16.sp,
+                            color = Color.Black
+                        )
+                    },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded = false
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .background(Color.White)
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 fun TicketDetailCard(
