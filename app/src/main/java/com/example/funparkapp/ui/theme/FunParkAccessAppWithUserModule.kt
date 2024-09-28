@@ -1,6 +1,5 @@
     package com.example.funparkapp.ui.theme
 
-    import RedeemCheckoutScreen
     import TicketViewModel
     import android.content.Context
     import android.util.Log
@@ -172,7 +171,6 @@
             currentRoute == FunParkScreen1.Menu.name -> FunParkScreen1.Menu
             currentRoute == FunParkScreen1.Account.name -> FunParkScreen1.Account
             currentRoute == FunParkScreen1.Redeem.name -> FunParkScreen1.Redeem
-            currentRoute == FunParkScreen1.RedeemCheckout.name -> FunParkScreen1.RedeemCheckout
             else -> FunParkScreen1.MainMenu
         }
 
@@ -196,18 +194,6 @@
                     navController = navController,
                     userViewModel = userViewModel // Add userViewModel
                 )
-                }
-
-                composable(route = "${FunParkScreen1.RedeemCheckout.name}/{pointsRequired}",
-                    arguments = listOf(navArgument("pointsRequired") { type = NavType.IntType })
-                ) { backStackEntry ->
-                    val pointsRequired = backStackEntry.arguments?.getInt("pointsRequired") ?: 0
-                    RedeemCheckoutScreen(
-                        navController = navController,
-                        pointsRequired = pointsRequired,
-                        userViewModel = userViewModel,
-                        ticketViewModel = ticketViewModel
-                    )
                 }
 
                 composable(route = FunParkScreen1.Account.name) {
