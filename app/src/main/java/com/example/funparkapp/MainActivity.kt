@@ -25,20 +25,20 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-//        lifecycleScope.launch {
-//            val appDatabase = AppDatabase.getDatabase(this@MainActivity)
-//            val userDao = appDatabase.userDao
-//
-//            val adminUser = UserType(
-//                username = "admin",
-//                email = "admin@example.com",
-//                password = "123",
-//                points = 0,
-//                role = "Admin"
-//            )
-//
-//            userDao.insert(adminUser)
-//        }
+        lifecycleScope.launch {
+            val appDatabase = AppDatabase.getDatabase(this@MainActivity)
+            val userDao = appDatabase.userDao
+
+            val adminUser = UserType(
+                username = "admin",
+                email = "admin@example.com",
+                password = "123",
+                points = 0,
+                role = "Admin"
+            )
+
+            userDao.insert(adminUser)
+        }
     }
 }
 

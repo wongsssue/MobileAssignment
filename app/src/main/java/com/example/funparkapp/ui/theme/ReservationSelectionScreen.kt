@@ -36,12 +36,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.funparkapp.data.FacilityViewModel
+import com.example.funparkapp.data.PurchaseHistory
 import com.example.funparkapp.data.PurchaseHistoryViewModel
+import com.example.funparkapp.data.PurchasedItem
 import com.example.funparkapp.globalVariable.TicketIDName
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+
+data class PurchaseWithTickets(
+    val purchaseHistory: PurchaseHistory,
+    val purchasedItems: List<PurchasedItem>
+)
 
 @Composable
 fun ReservationSelectionScreen(
@@ -54,12 +61,16 @@ fun ReservationSelectionScreen(
     val context = LocalContext.current
     val facility by facilityViewModel.getFacilityByName(facilityName).observeAsState()
     val purchaseHistory by purchaseHistoryViewModel.getPurchaseByTicketID(TicketIDName.ticketIDName!!).observeAsState()
-    var paxList by remember { mutableStateOf((1..15).map { it.toString() }) }
 
-    purchaseHistory?.let { p ->
-        paxList = (1..p.qty).map { it.toString() }
+    val qtyMap by purchaseHistoryViewModel.qtyMap.observeAsState(emptyMap()) // Observe qtyMap// Calculate total quantity from qtyMap
+    val totalQty = qtyMap.values.sum()
+
+    // Update paxList based on totalQty
+    var paxList by remember { mutableStateOf(getPaxList(totalQty)) }
+
+    LaunchedEffect(qtyMap) { // Update paxList when qtyMap changes
+        paxList = getPaxList(totalQty)
     }
-
     // States for spinner selections
     var selectedTime by remember { mutableStateOf("") }
     var selectedPax by remember { mutableStateOf("") }
@@ -307,5 +318,13 @@ fun DropdownMenu(
                 )
             }
         }
+    }
+}
+
+private fun getPaxList(totalQty: Int): List<String> {
+    return if (totalQty > 0) {
+        (1..totalQty).map { it.toString() }
+    } else {
+        (1..15).map { it.toString() } // Default range if qtyMap is empty
     }
 }

@@ -241,8 +241,6 @@ fun FunParkAccessApp(
                 ReservationManagementScreen(facilityViewModel)
             }
 
-
-
             composable(route = FunParkScreen.RVMainScreen.name) {
                 ReservationMainScreen(
                     viewOnly = "",
