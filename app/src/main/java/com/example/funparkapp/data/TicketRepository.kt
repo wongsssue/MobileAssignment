@@ -77,6 +77,7 @@ class TicketRepository(
                 Log.e("TicketRepository", "Failed to delete ticket from Firebase: ${e.message}")
             }
     }
+
     suspend fun syncTicketsFromFirebase(): LiveData<List<Ticket>> {
         val firebaseTickets = MutableLiveData<List<Ticket>>()
 
@@ -88,7 +89,6 @@ class TicketRepository(
                     val ticket = ticketSnapshot.getValue(Ticket::class.java)
                     ticket?.let {
                         ticketList.add(it)
-                        // Sync TicketType details
                         val ticketTypes = mutableListOf<TicketType>()
                         ticketSnapshot.child("ticketTypes").children.forEach { typeSnapshot ->
                             val ticketType = typeSnapshot.getValue(TicketType::class.java)
@@ -97,14 +97,12 @@ class TicketRepository(
                                 ticketTypes.add(ticketTypeEntity)
                             }
                         }
-                        // Insert ticket and its types into Room
                         coroutineScope.launch {
                             insertTicket(it)
                             ticketTypes.forEach { insertTicketType(it) }
                         }
                     }
                 }
-                // Update LiveData with fetched tickets
                 firebaseTickets.postValue(ticketList)
             }
         }.addOnFailureListener { e ->

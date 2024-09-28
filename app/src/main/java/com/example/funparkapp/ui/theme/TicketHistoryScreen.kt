@@ -3,6 +3,7 @@
 package com.example.funparkapp.ui.theme
 
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,7 +49,7 @@ fun TicketPurchasedHistoryScreen(
     viewTicket: () -> Unit
 ) {
     val allTickets by purchaseHistoryViewModel.allPurchasedTickets.observeAsState(emptyList())
-    var sortOption by remember { mutableStateOf("Most Recent") }
+    var sortOption by remember {mutableStateOf("Most Recent")}
 
     val sortedTickets = when (sortOption) {
         "Most Recent" -> allTickets.sortedByDescending { it.purchase.purchasedDate }

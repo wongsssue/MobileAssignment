@@ -12,11 +12,15 @@ import kotlinx.coroutines.launch
 
 class TicketViewModel(private val repository: TicketRepository) : ViewModel() {
 
-    val allTickets: LiveData<List<Ticket>> = repository.getAllTickets()
+    private val _allTickets: MutableLiveData<List<Ticket>> = MutableLiveData()
+    val allTickets: LiveData<List<Ticket>> get() = _allTickets
+
+    private val _firebaseTickets: MutableLiveData<List<Ticket>> = MutableLiveData()
+    val firebaseTickets: LiveData<List<Ticket>> get() = _firebaseTickets
 
     val allTicketsWithTypes: LiveData<List<TicketWithTicketType>> = repository.getAllTicketsWithTypes()
 
-    val firebaseTickets: LiveData<List<Ticket>> = MutableLiveData()
+
     fun getTicketWithTicketType(ticketPlan: String): LiveData<List<TicketWithTicketType>> {
         Log.d("TicketViewModel", "Requesting ticket with types for: $ticketPlan")
         return repository.getTicketWithTicketType(ticketPlan)
@@ -77,10 +81,9 @@ class TicketViewModel(private val repository: TicketRepository) : ViewModel() {
                 ticketWithType.ticketTypes.any { type -> type.ticketTypeId == ticketTypeId }
             }?.ticket
         } else {
-            null // Return null if ticketTypeId is invalid
+            null
         }
     }
-
 
     fun insert(ticket: Ticket, ticketTypes: Map<String, Pair<Double, String>>, pointsRequired: Int) = viewModelScope.launch {
         repository.insertTicket(ticket)
@@ -109,14 +112,16 @@ class TicketViewModel(private val repository: TicketRepository) : ViewModel() {
     }
 
 
-
     fun delete(ticket: Ticket) = viewModelScope.launch {
         repository.deleteTicket(ticket.ticketPlan)
+        syncTicketsFromFirebase()
+        _allTickets.postValue(repository.getAllTickets().value)
     }
 
     suspend fun syncTicketsFromFirebase() {
         repository.syncTicketsFromFirebase().observeForever { tickets ->
-            (firebaseTickets as MutableLiveData).postValue(tickets)
+            _firebaseTickets.postValue(tickets)
+            _allTickets.postValue(tickets)
         }
     }
 }
