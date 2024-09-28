@@ -24,9 +24,9 @@ data class AdminFeature(
 
 // List of admin features
 val adminFeatures = listOf(
-    AdminFeature("Manage Users", R.drawable.manage_users_icon, FunParkScreen1.AdminManageUser.name),
-    AdminFeature("Manage Redemptions", R.drawable.manage_redemptions_icon, FunParkScreen1.AdminManageRedeem.name),
-    AdminFeature("Manage Tickets", R.drawable.manage_tickets_icon, FunParkScreen1.AdminTicket.name),
+    AdminFeature("Manage Users", R.drawable.manage_users_icon, FunParkScreen.AdminManageUser.name),
+    AdminFeature("Manage Redemptions", R.drawable.manage_redemptions_icon, FunParkScreen.AdminManageRedeem.name),
+    AdminFeature("Manage Tickets", R.drawable.manage_tickets_icon, FunParkScreen.AdminTicket.name),
     AdminFeature("Logout", R.drawable.logout_icon,"logout")
     // Add more features as needed
 )
@@ -48,7 +48,7 @@ fun AdminDashboardScreen(navController: NavHostController, userViewModel: UserVi
                     .clickable {
                         if (feature.route == "logout"){
                             userViewModel.logout()
-                            navController.navigate(FunParkScreen1.Login.name)
+                            navController.navigate(FunParkScreen.Login.name)
                         } else {
                             navController.navigate(feature.route)
                         }

@@ -167,7 +167,7 @@ fun RedeemScreen(
                 confirmButton = {
                     Button(onClick = {
                         showConfirmationDialog = false
-                        navController.navigate(FunParkScreen1.MainMenu.name)
+                        navController.navigate(FunParkScreen.MainMenu.name)
                     }) {
                         Text("Go to Home")
                     }

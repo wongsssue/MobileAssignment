@@ -49,7 +49,7 @@ fun GettingStarted(navController: NavHostController) {
         )
 
         Button(
-            onClick = { navController.navigate(FunParkScreen1.Login.name) },
+            onClick = { navController.navigate(FunParkScreen.Login.name) },
             modifier = Modifier
                 .padding(16.dp)
                 .background(Color(0xFFFFA500), shape = RoundedCornerShape(8.dp)),

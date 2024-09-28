@@ -68,7 +68,7 @@ fun RegisterScreen(
                 onClick = {
                     if (password == confirmPassword) {
                         userViewModel.registerUser(username, email, password,role = "Customer")
-                        navController.navigate(FunParkScreen1.Login.name)
+                        navController.navigate(FunParkScreen.Login.name)
                     } else {
                         showError = true // Show error message
                     }
@@ -88,7 +88,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             TextButton(
-                onClick = { navController.navigate(FunParkScreen1.Login.name) },
+                onClick = { navController.navigate(FunParkScreen.Login.name) },
                 colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
             ) {
                 Text("Already have an account? Login")
@@ -97,7 +97,7 @@ fun RegisterScreen(
 
         // "Skip Register" button within the Box scope
         TextButton(
-            onClick = { navController.navigate(FunParkScreen1.MainMenu.name) },
+            onClick = { navController.navigate(FunParkScreen.MainMenu.name) },
             colors = ButtonDefaults.textButtonColors(contentColor = Color.White),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {

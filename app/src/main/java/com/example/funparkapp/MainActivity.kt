@@ -8,7 +8,6 @@ import androidx.lifecycle.lifecycleScope
 import com.example.funparkapp.data.AppDatabase
 import com.example.funparkapp.data.UserType
 import com.example.funparkapp.ui.theme.FunParkAccessApp
-import com.example.funparkapp.ui.theme.FunParkAccessAppWithUserModule
 import com.example.funparkapp.ui.theme.FunParkAppTheme
 import com.google.firebase.FirebaseApp
 import kotlinx.coroutines.launch
@@ -22,7 +21,7 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         setContent {
             FunParkAppTheme {
-               FunParkAccessAppWithUserModule()
+               FunParkAccessApp()
             }
         }
 

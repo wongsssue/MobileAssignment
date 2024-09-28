@@ -57,9 +57,9 @@ fun LoginScreen(
                         val user = userViewModel.login(username, password)
                         if (user != null) {
                             if (user.role == "Admin") {
-                                navController.navigate(FunParkScreen1.AdminDashboard.name) // Navigate to admin dashboard
+                                navController.navigate(FunParkScreen.AdminDashboard.name) // Navigate to admin dashboard
                             } else {
-                                navController.navigate(FunParkScreen1.MainMenu.name) // Navigate to user home screen
+                                navController.navigate(FunParkScreen.MainMenu.name) // Navigate to user home screen
                             }
                         } else {
                             showError = true
@@ -79,7 +79,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             TextButton(
-                onClick = { navController.navigate(FunParkScreen1.Register.name) },
+                onClick = { navController.navigate(FunParkScreen.Register.name) },
                 colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
             ) {
                 Text("Don't have an account? Register")
@@ -87,7 +87,7 @@ fun LoginScreen(
         }
 
         TextButton(
-            onClick = { navController.navigate(FunParkScreen1.MainMenu.name) },
+            onClick = { navController.navigate(FunParkScreen.MainMenu.name) },
             colors = ButtonDefaults.textButtonColors(contentColor = Color.White),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
