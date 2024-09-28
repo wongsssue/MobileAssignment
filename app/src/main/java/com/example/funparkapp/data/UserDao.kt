@@ -19,4 +19,10 @@ interface UserDao {
 
     @Update
     suspend fun updateUser(user: UserType)
+
+    @Query("SELECT * FROM UserType") // Assuming 'UserType' is your table name
+    suspend fun getAllUsers(): List<UserType>
+
+    @Delete
+    suspend fun deleteUser(user: UserType)
 }
