@@ -12,6 +12,15 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
     private val _loggedInUser = MutableStateFlow<UserType?>(null)
     val loggedInUser: StateFlow<UserType?> get() = _loggedInUser
 
+
+    private val _users = MutableStateFlow<List<UserType>>(emptyList())
+    val users: StateFlow<List<UserType>> = _users
+    init {
+        viewModelScope.launch {
+            _users.value = userRepository.getAllUsers()
+        }
+    }
+
     fun registerUser(username: String, email: String, password: String, role: String = "Customer") {
         viewModelScope.launch {
             val user = UserType(username, email, password, points = 0, role)
@@ -74,5 +83,21 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
     fun getLoggedInUser(): UserType? {
         return _loggedInUser.value
+    }
+
+    fun updateUser(user:UserType) {
+        viewModelScope.launch {
+            userRepository.updateUser(user)
+            // Refresh the user list after updating
+            _users.value = userRepository.getAllUsers()
+        }
+    }
+
+    fun deleteUser(user: UserType) {
+        viewModelScope.launch {
+            userRepository.deleteUser(user)
+            // Refresh the user list after deleting
+            _users.value = userRepository.getAllUsers()
+        }
     }
 }

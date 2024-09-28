@@ -180,6 +180,7 @@ fun FunParkAccessApp(
         currentRoute == FunParkScreen.Account.name -> FunParkScreen.Account
         currentRoute == FunParkScreen.Redeem.name -> FunParkScreen.Redeem
         currentRoute == FunParkScreen.AdminDashboard.name -> FunParkScreen.AdminDashboard
+        currentRoute == FunParkScreen.AdminManageUser.name -> FunParkScreen.AdminManageUser
         else -> FunParkScreen.MainMenu
     }
 
@@ -199,6 +200,10 @@ fun FunParkAccessApp(
             startDestination = FunParkScreen.GetStarted.name,
             modifier = Modifier.padding(innerPadding)
         ){
+            composable (route = FunParkScreen.AdminManageUser.name) {
+                ManageUsersScreen(userViewModel, navController)
+            }
+
             composable(route = FunParkScreen.AdminDashboard.name) {
                 AdminDashboardScreen(navController, userViewModel)
             }
