@@ -114,4 +114,8 @@ class TicketRepository(
         return firebaseTickets
     }
 
+    fun getAllTicketsWithTypes(): LiveData<List<TicketWithTicketType>> {
+        return ticketDao.getAllTicketsWithTypes()
+    }
+
 }

@@ -78,14 +78,14 @@ fun AdminTicketScreen(
             if (isFormVisible) {
                 TicketForm(
                     onCancelClick = { isFormVisible = false },
-                    onSubmitClick = { ticketPlan, ticketDescription, newTicketTypes ->
+                    onSubmitClick = { ticketPlan, ticketDescription, newTicketTypes, pointsRequired ->
                         val randomImageResId = drawableImages.random()
                         val newTicket = Ticket(
                             ticketPlan = ticketPlan,
                             ticketPlanDescription = ticketDescription,
                             imageResId = randomImageResId
                         )
-                        ticketViewModel.insert(newTicket, newTicketTypes)
+                        ticketViewModel.insert(newTicket, newTicketTypes, pointsRequired)
                         isFormVisible = false
                     }
                 )
@@ -108,12 +108,13 @@ fun AdminTicketScreen(
 @Composable
 fun TicketForm(
     onCancelClick: () -> Unit,
-    onSubmitClick: (String, String, Map<String, Pair<Double, String>>) -> Unit
+    onSubmitClick: (String, String, Map<String, Pair<Double, String>>, pointsRequired: Int) -> Unit
 ) {
     var ticketPlan by remember { mutableStateOf("") }
     var ticketPlanDescription by remember { mutableStateOf("") }
     var ticketTypeCount by remember { mutableStateOf(1) }
     var ticketTypes by remember { mutableStateOf(mutableMapOf<String, Pair<Double, String>>()) }
+    var pointsRequired by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
@@ -215,6 +216,19 @@ fun TicketForm(
                 }
 
                 item {
+                    EditField(
+                        value = pointsRequired,
+                        text = "Points Required",
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        onValueChange = { pointsRequired = it }
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
+                item {
                     Spacer(modifier = Modifier.height(20.dp))
                     Row(
                         horizontalArrangement = Arrangement.Center,
@@ -231,7 +245,7 @@ fun TicketForm(
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(
                             onClick = {
-                                onSubmitClick(ticketPlan, ticketPlanDescription, ticketTypes.toMap())
+                                onSubmitClick(ticketPlan, ticketPlanDescription, ticketTypes.toMap(), pointsRequired.toIntOrNull() ?: 0)
                             },
                             modifier = Modifier.width(120.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF8C00))

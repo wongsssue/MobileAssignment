@@ -12,5 +12,6 @@ data class TicketType(
     val ticketType: String = "",
     val ticketDescription: String = "",
     val price: Double = 0.0,
-    val ticketPlan:String = ""
+    val ticketPlan:String = "",
+    val pointsRequired: Int = 0
 )
