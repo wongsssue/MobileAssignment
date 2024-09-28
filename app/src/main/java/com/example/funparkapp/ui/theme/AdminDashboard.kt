@@ -27,6 +27,7 @@ val adminFeatures = listOf(
     AdminFeature("Manage Users", R.drawable.manage_users_icon, FunParkScreen.AdminManageUser.name),
     AdminFeature("Manage Redemptions", R.drawable.manage_redemptions_icon, FunParkScreen.AdminManageRedeem.name),
     AdminFeature("Manage Tickets", R.drawable.manage_tickets_icon, FunParkScreen.AdminTicket.name),
+    AdminFeature("Manage Reservations", R.drawable.reservation, FunParkScreen.RVManagementMainScreen.name),
     AdminFeature("Logout", R.drawable.logout_icon,"logout")
     // Add more features as needed
 )

@@ -207,6 +207,8 @@ fun FunParkAccessApp(
         currentRoute == FunParkScreen.RVSummaryScreen.name -> FunParkScreen.RVSummaryScreen
         currentRoute == FunParkScreen.RVDoneScreen.name -> FunParkScreen.RVDoneScreen
         currentRoute == FunParkScreen.RVQRScreen.name -> FunParkScreen.RVQRScreen
+        currentRoute == FunParkScreen.RVManagementMainScreen.name -> FunParkScreen.RVManagementMainScreen
+        currentRoute == FunParkScreen.RVTicketConfirmationScreen.name -> FunParkScreen.RVTicketConfirmationScreen
 
         else -> FunParkScreen.MainMenu
     }
@@ -227,6 +229,19 @@ fun FunParkAccessApp(
             startDestination = FunParkScreen.GetStarted.name,
             modifier = Modifier.padding(innerPadding)
         ){
+
+            composable(route = FunParkScreen.RVTicketConfirmationScreen.name) {
+                ReservationTicketConfirmationScreen(
+                    purchaseHistoryViewModel = purchaseHistoryViewModel,
+                    goToRV = { navController.navigate(FunParkScreen.RVMainScreen.name) }
+                )
+            }
+
+            composable(route = FunParkScreen.RVManagementMainScreen.name) {
+                ReservationManagementScreen(facilityViewModel)
+            }
+
+
 
             composable(route = FunParkScreen.RVMainScreen.name) {
                 ReservationMainScreen(
@@ -305,7 +320,7 @@ fun FunParkAccessApp(
             composable(route = FunParkScreen.MainMenu.name){
                 MainMenuScreen(
                     onTicketClick = {navController.navigate(FunParkScreen.TicketMenu.name)},
-                    onReserveClick = {navController.navigate(FunParkScreen.RVMainScreen.name)}
+                    onReserveClick = {navController.navigate(FunParkScreen.RVTicketConfirmationScreen.name)}
                 )
             }
 
