@@ -100,4 +100,13 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
             _users.value = userRepository.getAllUsers()
         }
     }
+
+    fun updateUserPoints(username: String, newPoints: Int) {
+        viewModelScope.launch {// 1. Update points in the data source
+            userRepository.updateUserPoints(username, newPoints)
+
+            // 2. Update userState flow
+            userState.value = userRepository.getUserByUsername(username)
+        }
+    }
 }

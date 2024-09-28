@@ -41,7 +41,15 @@ fun ManageUsersScreen(userViewModel: UserViewModel, navController: NavHostContro
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
     var userToDelete by remember { mutableStateOf<UserType?>(null) }
 
-    val filteredUsers = userViewModel.users.collectAsState().value
+    var allUsers by remember { mutableStateOf<List<UserType>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        userViewModel.users.collect { users ->
+            allUsers = users
+        }
+    }
+
+    val filteredUsers = allUsers
         .filter { user ->
             user.username.contains(searchQuery, ignoreCase = true) &&
                     (filterState.role == null || user.role == filterState.role)
@@ -87,9 +95,8 @@ fun ManageUsersScreen(userViewModel: UserViewModel, navController: NavHostContro
             Spacer(modifier = Modifier.height(16.dp))
 
             // Filter Options (Dropdown or similar)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Column(
+                modifier = Modifier.fillMaxWidth()
             ) {
                 // Sort By
                 var expandedSortBy by remember { mutableStateOf(false) }

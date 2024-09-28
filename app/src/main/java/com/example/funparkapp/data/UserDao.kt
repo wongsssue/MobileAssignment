@@ -25,4 +25,7 @@ interface UserDao {
 
     @Delete
     suspend fun deleteUser(user: UserType)
+
+    @Query("UPDATE UserType SET points = :newPoints WHERE username = :username")
+    suspend fun updateUserPoints(username: String, newPoints: Int)
 }

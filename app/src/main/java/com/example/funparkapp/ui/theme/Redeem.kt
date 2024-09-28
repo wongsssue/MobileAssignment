@@ -1,6 +1,8 @@
 package com.example.funparkapp.ui.theme
 
 import TicketViewModel
+import android.icu.text.SimpleDateFormat
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -38,20 +41,37 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.funparkapp.data.RedeemHistory
+import com.example.funparkapp.data.RedeemHistoryViewModel
 import com.example.funparkapp.data.Ticket
 import com.example.funparkapp.data.TicketType
+import com.example.funparkapp.data.UserType
 import com.example.funparkapp.data.UserViewModel
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun RedeemScreen(
     ticketViewModel: TicketViewModel,
     navController: NavHostController,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    redeemHistoryViewModel: RedeemHistoryViewModel
 ) {
     var selectedFilter by remember { mutableStateOf("Most Recent") }
 
+    val loggedInUser by userViewModel.loggedInUser.collectAsState()
+    val username = loggedInUser?.username
     // Get all tickets with types from the view model
     val ticketsWithTypes by ticketViewModel.allTicketsWithTypes.observeAsState(emptyList())
+
+    var currentUser by remember { mutableStateOf<UserType?>(null) }
+    val userState by userViewModel.userState.collectAsState()
+
+    LaunchedEffect(key1 = userState) {
+        userViewModel.userState.collect { user ->
+            currentUser = user
+        }
+    }
 
     val sortedTickets = when (selectedFilter) {
         "Lowest Points" -> ticketsWithTypes.sortedBy {
@@ -68,7 +88,6 @@ fun RedeemScreen(
     var selectedTicket by remember { mutableStateOf<Ticket?>(null) }
     var balance by remember { mutableStateOf(0)}
     val user = userViewModel.userState.collectAsState().value
-
 
     Column(
         modifier = Modifier
@@ -111,12 +130,17 @@ fun RedeemScreen(
 
         // Redeem Dialog
         if (showRedeemDialog) {
+
             val ticketWithType = ticketsWithTypes.find { it.ticket == selectedTicket } // Find the TicketWithType object
             val pointsRequired =ticketWithType?.ticketTypes?.find { it.ticketType == "Adult" }?.let { it.pointsRequired } ?: 0
-            LaunchedEffect(user, selectedTicket) { // Add selectedTicket as a key
-                if (user != null && selectedTicket != null) {
-                    balance = user.points - pointsRequired
+            LaunchedEffect(key1 = currentUser, key2 = selectedTicket) { // Add selectedTicket as a key
+                if (currentUser != null && selectedTicket != null) {
+                    val currentPoints = currentUser!!.points // Store currentUser.points in a local variable
+                    balance = currentPoints - pointsRequired
                 }
+            }
+            val currentPoints by remember(currentUser) { // Use derivedStateOf
+                derivedStateOf { currentUser?.points ?: 0 }
             }
 
             AlertDialog(
@@ -127,7 +151,7 @@ fun RedeemScreen(
                         selectedTicket?.let { ticket ->
                             Text("Claimed Item: ${ticket.ticketPlan}", fontSize = 16.sp)
                         }
-                        Text("Your Points: ${user?.points ?: 0}", fontSize = 16.sp)
+                        Text("Your Points: $currentPoints", fontSize = 16.sp)
                         Text("Points Required: $pointsRequired", fontSize = 16.sp)
                         if (balance >= 0) {
                             Text("Balance: $balance", fontSize = 16.sp, color = Color.Green)
@@ -140,12 +164,28 @@ fun RedeemScreen(
                     Button(
                         onClick = {
                             showRedeemDialog = false
-                            if (balance >= 0) {
+                            if (balance >= 0.1) {
                                 showConfirmationDialog = true
-                                // TODO: Implement actual redemption logic here (update points, etc.)
+
+                                // Create RedeemHistory object with username
+                                val redeemHistory = RedeemHistory(
+                                    ticketPlan = selectedTicket?.ticketPlan ?: "",
+                                    redeemTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date()),
+                                    username = username ?: ""
+                                )
+
+                                // Insert redeem history and handle redeemId
+                                redeemHistoryViewModel.insertRedeemHistory(redeemHistory) { redeemId ->
+                                    Log.d("RedeemScreen", "Redeem history inserted with ID: $redeemId")
+                                    // Perform any necessary actions with redeemId, e.g., update UI
+                                }
+
+                                currentUser?.let { user ->
+                                    userViewModel.updateUserPoints(user.username, balance)
+                                }
                             }
                         },
-                        enabled = balance >= 0
+                        enabled = balance >= 0.1
                     ) {
                         Text("Confirm")
                     }

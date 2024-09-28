@@ -49,6 +49,7 @@ import com.example.funparkapp.data.PaymentMethodViewModelFactory
 import com.example.funparkapp.data.PurchaseHistoryRepository
 import com.example.funparkapp.data.PurchaseHistoryViewModel
 import com.example.funparkapp.data.PurchaseHistoryViewModelFactory
+import com.example.funparkapp.data.RedeemHistoryRepository
 import com.example.funparkapp.data.ReservationRepository
 import com.example.funparkapp.data.ReservationViewModel
 import com.example.funparkapp.data.ReservationViewModelFactory
@@ -63,6 +64,9 @@ import com.example.funparkapp.data.UserViewModelFactory
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.example.funparkapp.data.RedeemHistoryDao
+import com.example.funparkapp.data.RedeemHistoryViewModel
+import com.example.funparkapp.data.RedeemHistoryViewModelFactory
 
 
 enum class FunParkScreen(@StringRes val title: Int){
@@ -92,6 +96,7 @@ enum class FunParkScreen(@StringRes val title: Int){
     RVSummaryScreen(title = R.string.reservation_main_page),
     RVDoneScreen(title = R.string.reservation_main_page),
     RVQRScreen(title = R.string.reservation_main_page),
+    RedeemHistory(title = R.string.redeem_history)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -158,6 +163,7 @@ fun FunParkAccessApp(
     val paymentMethodRepository = remember { PaymentMethodRepository(appDatabase.paymentMethodDao) }
     val facilityRepository = remember { FacilityRepository(appDatabase.facilityDao) }
     val reservationRepository = remember { ReservationRepository(appDatabase.reservationDao) }
+    val redeemHistoryRepository = remember { RedeemHistoryRepository(appDatabase.redeemHistoryDao)}
 
     // Create ViewModelFactory instances
     val ticketViewModelFactory = remember { TicketViewModelFactory(ticketRepository) }
@@ -166,6 +172,7 @@ fun FunParkAccessApp(
     val paymentMethodViewModelFactory = remember {PaymentMethodViewModelFactory(paymentMethodRepository)}
     val facilityViewModelFactory = remember { FacilityViewModelFactory(facilityRepository) }
     val reservationViewModelFactory = remember { ReservationViewModelFactory(reservationRepository) }
+    val redeemHistoryViewModelFactory = remember { RedeemHistoryViewModelFactory(redeemHistoryRepository)}
 
     // Get ViewModel instances using the factory
     val ticketViewModel: TicketViewModel = viewModel(factory = ticketViewModelFactory)
@@ -175,6 +182,7 @@ fun FunParkAccessApp(
     val sharedViewModel: SharedViewModel = viewModel()
     val facilityViewModel: FacilityViewModel = viewModel(factory = facilityViewModelFactory)
     val reservationViewModel: ReservationViewModel = viewModel(factory = reservationViewModelFactory)
+    val redeemHistoryViewModel: RedeemHistoryViewModel = viewModel(factory = redeemHistoryViewModelFactory)
 
     //User
     val userRepository = remember { UserRepository(appDatabase.userDao) }
@@ -202,6 +210,7 @@ fun FunParkAccessApp(
         currentRoute == FunParkScreen.Redeem.name -> FunParkScreen.Redeem
         currentRoute == FunParkScreen.AdminDashboard.name -> FunParkScreen.AdminDashboard
         currentRoute == FunParkScreen.AdminManageUser.name -> FunParkScreen.AdminManageUser
+        currentRoute == FunParkScreen.AdminManageRedeem.name -> FunParkScreen.AdminManageRedeem
         currentRoute == FunParkScreen.RVMainScreen.name -> FunParkScreen.RVMainScreen
         currentRoute == FunParkScreen.RVSelectionScreen.name -> FunParkScreen.RVSelectionScreen
         currentRoute == FunParkScreen.RVSummaryScreen.name -> FunParkScreen.RVSummaryScreen
@@ -209,6 +218,7 @@ fun FunParkAccessApp(
         currentRoute == FunParkScreen.RVQRScreen.name -> FunParkScreen.RVQRScreen
         currentRoute == FunParkScreen.RVManagementMainScreen.name -> FunParkScreen.RVManagementMainScreen
         currentRoute == FunParkScreen.RVTicketConfirmationScreen.name -> FunParkScreen.RVTicketConfirmationScreen
+        currentRoute == FunParkScreen.RedeemHistory.name -> FunParkScreen.RedeemHistory
 
         else -> FunParkScreen.MainMenu
     }
@@ -229,6 +239,17 @@ fun FunParkAccessApp(
             startDestination = FunParkScreen.GetStarted.name,
             modifier = Modifier.padding(innerPadding)
         ){
+
+            composable (route = FunParkScreen.AdminManageRedeem.name) {
+                ManageRedemptionsScreen(redeemHistoryViewModel)
+            }
+
+            composable(route = FunParkScreen.RedeemHistory.name) {
+                RedemptionHistoryScreen(
+                    userViewModel = userViewModel,
+                    redeemHistoryViewModel = redeemHistoryViewModel
+                )
+            }
 
             composable(route = FunParkScreen.RVTicketConfirmationScreen.name) {
                 ReservationTicketConfirmationScreen(
@@ -260,7 +281,8 @@ fun FunParkAccessApp(
             composable(route = FunParkScreen.Redeem.name) {RedeemScreen(
                 ticketViewModel = ticketViewModel,
                 navController = navController,
-                userViewModel = userViewModel // Add userViewModel
+                userViewModel = userViewModel,
+                redeemHistoryViewModel = redeemHistoryViewModel
             )
             }
 
@@ -366,7 +388,8 @@ fun FunParkAccessApp(
                     cartItemViewModel = cartItemViewModel,
                     purchaseHistoryViewModel = purchaseHistoryViewModel,
                     paymentMethodViewModel = paymentMethodViewModel,
-                    sharedViewModel= sharedViewModel
+                    sharedViewModel= sharedViewModel,
+                    userViewModel = userViewModel
                 )
             }
 

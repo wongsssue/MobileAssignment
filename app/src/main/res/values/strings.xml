@@ -44,4 +44,5 @@
     <string name="admin_manage_redeem">Manage Redemptions</string>
     <string name="reservation_management">Reservation Management</string>
     <string name="reservation_main_page">Reservation</string>
+    <string name="redeem_history">Redemption History</string>"
 </resources>

@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +31,7 @@ import com.example.funparkapp.data.PurchaseHistory
 import com.example.funparkapp.data.PurchaseHistoryViewModel
 import com.example.funparkapp.data.PurchasedItem
 import com.example.funparkapp.data.SharedViewModel
+import com.example.funparkapp.data.UserViewModel
 
 @Composable
 fun CheckoutScreen(
@@ -37,7 +39,8 @@ fun CheckoutScreen(
     cartItemViewModel: CartItemViewModel,
     purchaseHistoryViewModel: PurchaseHistoryViewModel,
     paymentMethodViewModel: PaymentMethodViewModel,
-    sharedViewModel: SharedViewModel
+    sharedViewModel: SharedViewModel,
+    userViewModel: UserViewModel
 ) {
 
     val cartItems by cartItemViewModel.allCartItems.observeAsState(emptyList())
@@ -51,6 +54,8 @@ fun CheckoutScreen(
     var showPaymentMethodDialog by remember { mutableStateOf(false) }
     var selectedPaymentMethod by remember { mutableStateOf("Online Banking") }
     var selectedPaymentImage by remember { mutableStateOf(R.drawable.onlinebanking) }
+    val loggedInUser by userViewModel.loggedInUser.collectAsState() // Observe loggedInUser flow
+    val username = loggedInUser?.username
 
     Column(
         modifier = Modifier
@@ -157,6 +162,8 @@ fun CheckoutScreen(
                     pricePaid = total,
                     purchasedDate = Date(),
                 )
+                val pointsAwarded = (total * 2).toInt()
+                username?.let { userViewModel.updateUserPoints(it, pointsAwarded) }
                 val purchasedItems = cartItems.map { cartItem ->
                     PurchasedItem(
                         itemId = 0L,
