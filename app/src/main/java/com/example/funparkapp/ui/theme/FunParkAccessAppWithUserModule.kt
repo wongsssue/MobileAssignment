@@ -200,7 +200,7 @@
             ){
 
                 composable(route = FunParkScreen1.AdminDashboard.name) {
-                    AdminDashboardScreen(navController)
+                    AdminDashboardScreen(navController, userViewModel)
                 }
 
                 composable(route = FunParkScreen1.Redeem.name) {RedeemScreen(
