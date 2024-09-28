@@ -53,11 +53,18 @@ fun LoginScreen(
 
             Button(
                 onClick = {
-                    userViewModel.login(username, password, {
-                        navController.navigate(FunParkScreen1.MainMenu.name) // Navigate if successful
-                    }, {
-                        showError = true // Show error if login fails
-                    })
+                    coroutineScope.launch {
+                        val user = userViewModel.login(username, password)
+                        if (user != null) {
+                            if (user.role == "Admin") {
+                                navController.navigate(FunParkScreen1.AdminDashboard.name) // Navigate to admin dashboard
+                            } else {
+                                navController.navigate(FunParkScreen1.MainMenu.name) // Navigate to user home screen
+                            }
+                        } else {
+                            showError = true
+                        }
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA500))
             ) {

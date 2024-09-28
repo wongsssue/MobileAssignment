@@ -8,5 +8,6 @@ data class UserType(
     @PrimaryKey val username: String,
     val email: String,
     val password: String, // Store hashed password
-    val points: Int
+    val points: Int,
+    val role: String = "Customer"
 )

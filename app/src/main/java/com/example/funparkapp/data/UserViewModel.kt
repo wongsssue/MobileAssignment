@@ -12,9 +12,9 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
     private val _loggedInUser = MutableStateFlow<UserType?>(null)
     val loggedInUser: StateFlow<UserType?> get() = _loggedInUser
 
-    fun registerUser(username: String, email: String, password: String) {
+    fun registerUser(username: String, email: String, password: String, role: String = "Customer") {
         viewModelScope.launch {
-            val user = UserType(username, email, password, points = 0)
+            val user = UserType(username, email, password, points = 0, role)
             userRepository.registerUser(user)
             userState.value = user // Update user state
         }
@@ -54,15 +54,17 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
         userState.value = null
     }
 
-    fun login(username: String, password: String, onSuccess: () -> Unit, onError: () -> Unit) {
-        viewModelScope.launch {
+    suspend fun login(username: String, password: String): UserType? {
+        return try {
             val user = userRepository.getUserByUsername(username)
             if (user != null && user.password == password) {
                 _loggedInUser.value = user // Set the logged-in user
-                onSuccess()
-            } else {
-                onError()
+                user // Return the user object
+            }else {
+                null // Return null if login fails
             }
+        } catch (e: Exception) {
+            null // Return null if an exception occurs
         }
     }
 

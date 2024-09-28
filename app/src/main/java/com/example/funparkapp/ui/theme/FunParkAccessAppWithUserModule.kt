@@ -74,7 +74,9 @@
         Menu(title = R.string.menu),
         Account(title = R.string.account),
         Redeem(title = R.string.redeem),
-        RedeemCheckout(title = R.string.redeem_checkout)
+        AdminDashboard(title = R.string.admin_dashboard),
+        AdminManageUser(title = R.string.admin_manage_user),
+        AdminManageRedeem(title = R.string.admin_manage_redeem)
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -84,8 +86,11 @@
         canNavigateBack: Boolean,
         navigateUp: () -> Unit,
         onMenuClick: () -> Unit,
-        modifier: Modifier = Modifier
+        modifier: Modifier = Modifier,
+        userViewModel: UserViewModel
     ) {
+        val loggedInUser by userViewModel.loggedInUser.collectAsState()
+
         CenterAlignedTopAppBar(
             title = { Text(stringResource(currentScreen1.title), fontSize = 30.sp, fontWeight = FontWeight.Bold) },
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -104,12 +109,14 @@
                 }
             },
             actions = {
-                IconButton(onClick = { onMenuClick() }) {
-                    Icon(
-                        painter = painterResource(R.drawable.menu),
-                        contentDescription = "Menu Bar",
-                        modifier = Modifier.size(35.dp)
-                    )
+                if (loggedInUser?.role != "Admin") {
+                    IconButton(onClick = { onMenuClick() }) {
+                        Icon(
+                            painter = painterResource(R.drawable.menu),
+                            contentDescription = "Menu Bar",
+                            modifier = Modifier.size(35.dp)
+                        )
+                    }
                 }
             }
         )
@@ -171,6 +178,7 @@
             currentRoute == FunParkScreen1.Menu.name -> FunParkScreen1.Menu
             currentRoute == FunParkScreen1.Account.name -> FunParkScreen1.Account
             currentRoute == FunParkScreen1.Redeem.name -> FunParkScreen1.Redeem
+            currentRoute == FunParkScreen1.AdminDashboard.name -> FunParkScreen1.AdminDashboard
             else -> FunParkScreen1.MainMenu
         }
 
@@ -180,7 +188,8 @@
                     currentScreen1 = currentScreen1,
                     canNavigateBack = navController.previousBackStackEntry != null,
                     navigateUp = { navController.navigateUp() },
-                    onMenuClick = { navController.navigate(FunParkScreen1.Menu.name) }
+                    onMenuClick = { navController.navigate(FunParkScreen1.Menu.name) },
+                    userViewModel = userViewModel
                 )
             }
         ) { innerPadding ->
@@ -189,6 +198,11 @@
                 startDestination = FunParkScreen1.GetStarted.name,
                 modifier = Modifier.padding(innerPadding)
             ){
+
+                composable(route = FunParkScreen1.AdminDashboard.name) {
+                    AdminDashboardScreen(navController)
+                }
+
                 composable(route = FunParkScreen1.Redeem.name) {RedeemScreen(
                     ticketViewModel = ticketViewModel,
                     navController = navController,

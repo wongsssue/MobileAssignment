@@ -39,4 +39,7 @@
     <string name="account">Account</string>
     <string name="redeem">Redeem</string>
     <string name="redeem_checkout">Redemption Checkout</string>
+    <string name="admin_dashboard">Admin Dashboard</string>
+    <string name="admin_manage_user">Manage Users</string>
+    <string name="admin_manage_redeem">Manage Redemptions</string>
 </resources>

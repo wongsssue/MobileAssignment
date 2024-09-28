@@ -4,10 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.lifecycle.lifecycleScope
+import com.example.funparkapp.data.AppDatabase
+import com.example.funparkapp.data.UserType
 import com.example.funparkapp.ui.theme.FunParkAccessApp
 import com.example.funparkapp.ui.theme.FunParkAccessAppWithUserModule
 import com.example.funparkapp.ui.theme.FunParkAppTheme
 import com.google.firebase.FirebaseApp
+import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
@@ -21,6 +25,21 @@ class MainActivity : ComponentActivity() {
                FunParkAccessAppWithUserModule()
             }
         }
+
+//        lifecycleScope.launch {
+//            val appDatabase = AppDatabase.getDatabase(this@MainActivity)
+//            val userDao = appDatabase.userDao
+//
+//            val adminUser = UserType(
+//                username = "admin",
+//                email = "admin@example.com",
+//                password = "123",
+//                points = 0,
+//                role = "Admin"
+//            )
+//
+//            userDao.insert(adminUser)
+//        }
     }
 }
 

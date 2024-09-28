@@ -67,7 +67,7 @@ fun RegisterScreen(
             Button(
                 onClick = {
                     if (password == confirmPassword) {
-                        userViewModel.registerUser(username, email, password)
+                        userViewModel.registerUser(username, email, password,role = "Customer")
                         navController.navigate(FunParkScreen1.Login.name)
                     } else {
                         showError = true // Show error message
