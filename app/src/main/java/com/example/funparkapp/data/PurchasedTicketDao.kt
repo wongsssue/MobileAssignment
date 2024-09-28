@@ -10,6 +10,9 @@ import androidx.room.Transaction
 @Dao
 interface PurchasedTicketDao {
 
+    @Query("SELECT * FROM ticket_purchased WHERE id = :ticketID")
+    fun getPurchaseByTicketID(ticketID: Long): LiveData<PurchaseHistory>
+
     @Transaction
     @Query("SELECT * FROM ticket_purchased")
     fun getAllPurchasesWithTickets(): LiveData<List<PurchaseWithTickets>>

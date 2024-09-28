@@ -78,6 +78,10 @@ class PurchaseHistoryRepository(
         return purchasedTicketDao.getPurchaseWithTicketsById(ticketID)
     }
 
+    fun getPurchaseByTicketID(ticketID: Long): LiveData<PurchaseHistory> {
+        return purchasedTicketDao.getPurchaseByTicketID(ticketID)
+    }
+
     private fun observePurchasesInRealtime() {
         firebaseDatabase.child("purchaseHistory").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {

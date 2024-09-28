@@ -152,10 +152,12 @@ fun CheckoutScreen(
         Button(
             onClick = {
                 val generatedPurchaseId = (100000..999999).random().toLong()
+                val totalQuantity = cartItems.sumOf { it.quantity }
                 val purchaseHistory = PurchaseHistory(
                     id = generatedPurchaseId,
                     pricePaid = total,
-                    purchasedDate = Date()
+                    purchasedDate = Date(),
+                    qty = totalQuantity
                 )
                 val purchasedItems = cartItems.map { cartItem ->
                     PurchasedItem(

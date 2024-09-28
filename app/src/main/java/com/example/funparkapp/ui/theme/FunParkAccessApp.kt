@@ -40,12 +40,18 @@ import com.example.funparkapp.data.AppDatabase
 import com.example.funparkapp.data.CartItemRepository
 import com.example.funparkapp.data.CartItemViewModel
 import com.example.funparkapp.data.CartItemViewModelFactory
+import com.example.funparkapp.data.FacilityRepository
+import com.example.funparkapp.data.FacilityViewModel
+import com.example.funparkapp.data.FacilityViewModelFactory
 import com.example.funparkapp.data.PaymentMethodRepository
 import com.example.funparkapp.data.PaymentMethodViewModel
 import com.example.funparkapp.data.PaymentMethodViewModelFactory
 import com.example.funparkapp.data.PurchaseHistoryRepository
 import com.example.funparkapp.data.PurchaseHistoryViewModel
 import com.example.funparkapp.data.PurchaseHistoryViewModelFactory
+import com.example.funparkapp.data.ReservationRepository
+import com.example.funparkapp.data.ReservationViewModel
+import com.example.funparkapp.data.ReservationViewModelFactory
 import com.example.funparkapp.data.SharedViewModel
 import com.example.funparkapp.data.TicketRepository
 import com.example.funparkapp.data.TicketViewModelFactory
@@ -77,7 +83,15 @@ enum class FunParkScreen(@StringRes val title: Int){
     Redeem(title = R.string.redeem),
     AdminDashboard(title = R.string.admin_dashboard),
     AdminManageUser(title = R.string.admin_manage_user),
-    AdminManageRedeem(title = R.string.admin_manage_redeem)
+    AdminManageRedeem(title = R.string.admin_manage_redeem),
+    RVManagementMainScreen(title = R.string.reservation_management),
+    RVViewScreen(title = R.string.reservation_main_page),
+    RVTicketConfirmationScreen(title = R.string.reservation_main_page),
+    RVMainScreen(title = R.string.reservation_main_page),
+    RVSelectionScreen(title = R.string.reservation_main_page),
+    RVSummaryScreen(title = R.string.reservation_main_page),
+    RVDoneScreen(title = R.string.reservation_main_page),
+    RVQRScreen(title = R.string.reservation_main_page),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -142,12 +156,16 @@ fun FunParkAccessApp(
     val cartRepository = remember { CartItemRepository(appDatabase.cartDao) }
     val purchaseHistoryRepository = remember { PurchaseHistoryRepository(appDatabase.ticketPurchasedDao, firebaseDatabase2) }
     val paymentMethodRepository = remember { PaymentMethodRepository(appDatabase.paymentMethodDao) }
+    val facilityRepository = remember { FacilityRepository(appDatabase.facilityDao) }
+    val reservationRepository = remember { ReservationRepository(appDatabase.reservationDao) }
 
     // Create ViewModelFactory instances
     val ticketViewModelFactory = remember { TicketViewModelFactory(ticketRepository) }
     val cartItemViewModelFactory = remember { CartItemViewModelFactory(cartRepository) }
     val purchaseHistoryViewModelFactory = remember { PurchaseHistoryViewModelFactory(purchaseHistoryRepository) }
     val paymentMethodViewModelFactory = remember {PaymentMethodViewModelFactory(paymentMethodRepository)}
+    val facilityViewModelFactory = remember { FacilityViewModelFactory(facilityRepository) }
+    val reservationViewModelFactory = remember { ReservationViewModelFactory(reservationRepository) }
 
     // Get ViewModel instances using the factory
     val ticketViewModel: TicketViewModel = viewModel(factory = ticketViewModelFactory)
@@ -155,6 +173,8 @@ fun FunParkAccessApp(
     val purchaseHistoryViewModel: PurchaseHistoryViewModel = viewModel(factory = purchaseHistoryViewModelFactory)
     val paymentMethodViewModel: PaymentMethodViewModel = viewModel(factory = paymentMethodViewModelFactory)
     val sharedViewModel: SharedViewModel = viewModel()
+    val facilityViewModel: FacilityViewModel = viewModel(factory = facilityViewModelFactory)
+    val reservationViewModel: ReservationViewModel = viewModel(factory = reservationViewModelFactory)
 
     //User
     val userRepository = remember { UserRepository(appDatabase.userDao) }
@@ -169,6 +189,7 @@ fun FunParkAccessApp(
         currentRoute.startsWith(FunParkScreen.TicketType.name) -> FunParkScreen.TicketType
         currentRoute == FunParkScreen.MainMenu.name -> FunParkScreen.MainMenu
         currentRoute == FunParkScreen.TicketMenu.name -> FunParkScreen.TicketMenu
+        currentRoute == FunParkScreen.TicketHistory.name -> FunParkScreen.TicketHistory
         currentRoute == FunParkScreen.ShoppingCart.name -> FunParkScreen.ShoppingCart
         currentRoute == FunParkScreen.Checkout.name -> FunParkScreen.Checkout
         currentRoute == FunParkScreen.PaySuccess.name -> FunParkScreen.PaySuccess
@@ -181,6 +202,12 @@ fun FunParkAccessApp(
         currentRoute == FunParkScreen.Redeem.name -> FunParkScreen.Redeem
         currentRoute == FunParkScreen.AdminDashboard.name -> FunParkScreen.AdminDashboard
         currentRoute == FunParkScreen.AdminManageUser.name -> FunParkScreen.AdminManageUser
+        currentRoute == FunParkScreen.RVMainScreen.name -> FunParkScreen.RVMainScreen
+        currentRoute == FunParkScreen.RVSelectionScreen.name -> FunParkScreen.RVSelectionScreen
+        currentRoute == FunParkScreen.RVSummaryScreen.name -> FunParkScreen.RVSummaryScreen
+        currentRoute == FunParkScreen.RVDoneScreen.name -> FunParkScreen.RVDoneScreen
+        currentRoute == FunParkScreen.RVQRScreen.name -> FunParkScreen.RVQRScreen
+
         else -> FunParkScreen.MainMenu
     }
 
@@ -200,6 +227,15 @@ fun FunParkAccessApp(
             startDestination = FunParkScreen.GetStarted.name,
             modifier = Modifier.padding(innerPadding)
         ){
+
+            composable(route = FunParkScreen.RVMainScreen.name) {
+                ReservationMainScreen(
+                    viewOnly = "",
+                    facilityViewModel,
+                    goToSpecificFacility = { viewOnly, facilityName ->
+                })
+            }
+
             composable (route = FunParkScreen.AdminManageUser.name) {
                 ManageUsersScreen(userViewModel, navController)
             }
@@ -269,7 +305,7 @@ fun FunParkAccessApp(
             composable(route = FunParkScreen.MainMenu.name){
                 MainMenuScreen(
                     onTicketClick = {navController.navigate(FunParkScreen.TicketMenu.name)},
-                    onReserveClick = {}
+                    onReserveClick = {navController.navigate(FunParkScreen.RVMainScreen.name)}
                 )
             }
 

@@ -12,7 +12,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 
-@Database(entities = [UserType::class, Ticket::class, TicketType::class, CartItem::class, PurchaseHistory::class, PurchasedItem::class, PaymentMethod::class], version = 5)
+@Database(entities = [UserType::class, Ticket::class, TicketType::class, CartItem::class, PurchaseHistory::class, PurchasedItem::class, PaymentMethod::class, Facility:: class, Reservation::class], version = 6)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract val ticketDao: TicketDao
@@ -20,7 +20,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract val ticketPurchasedDao: PurchasedTicketDao
     abstract val paymentMethodDao: PaymentMethodDao
     abstract val userDao: UserDao
-
+    abstract val facilityDao: FacilityDao
+    abstract val reservationDao: ReservationDao
 
     companion object {
         @Volatile

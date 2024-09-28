@@ -12,6 +12,10 @@ class PurchaseHistoryViewModel(private val repository: PurchaseHistoryRepository
         return repository.getPurchaseWithTicketsById(ticketID)
     }
 
+    fun getPurchaseByTicketID(ticketID: Long): LiveData<PurchaseHistory> {
+        return repository.getPurchaseByTicketID(ticketID)
+    }
+
     fun insertPurchaseWithItems(purchaseHistory: PurchaseHistory, purchasedItems: List<PurchasedItem>, onResult: (Long) -> Unit) {
         viewModelScope.launch {
             repository.insertPurchaseWithItems(purchaseHistory, purchasedItems)

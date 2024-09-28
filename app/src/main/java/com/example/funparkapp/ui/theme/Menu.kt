@@ -22,12 +22,12 @@ data class MenuItem(val title: String, val route: String? = null, val icon: Int?
 val menuItems = listOf(
     MenuItem("Home", FunParkScreen.MainMenu.name),
     MenuItem("Account", FunParkScreen.Account.name),
-    MenuItem("Reservations", FunParkScreen.TicketMenu.name), // Example: Navigate to TicketMenu for reservations
-    MenuItem("Tickets", FunParkScreen.TicketMenu.name),
+    MenuItem("Reservations"),
+    MenuItem("Tickets", FunParkScreen.TicketHistory.name),
     MenuItem("Redeem", FunParkScreen.Redeem.name),
     MenuItem("Map"),    // No route for this item yet
     MenuItem("Souvenirs"), // No route for this item yet
-    MenuItem("Purchase History", FunParkScreen.TicketHistory.name) // Fixed missing comma
+    MenuItem("Purchase History", FunParkScreen.TicketHistory.name)
 )
 
 @Composable
