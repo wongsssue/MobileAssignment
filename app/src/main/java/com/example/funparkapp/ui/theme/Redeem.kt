@@ -17,12 +17,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -33,13 +36,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.funparkapp.data.Ticket
 import com.example.funparkapp.data.TicketType
+import com.example.funparkapp.data.UserViewModel
 
 @Composable
 fun RedeemScreen(
     ticketViewModel: TicketViewModel,
-    onClaimTicket: (Ticket) -> Unit
+    navController: NavHostController,
+    userViewModel: UserViewModel
 ) {
     var selectedFilter by remember { mutableStateOf("Most Recent") }
 
@@ -55,6 +62,13 @@ fun RedeemScreen(
         }
         else -> ticketsWithTypes // Default case
     }
+
+    var showConfirmationDialog by remember { mutableStateOf(false) }
+    var showRedeemDialog by remember { mutableStateOf(false) }
+    var selectedTicket by remember { mutableStateOf<Ticket?>(null) }
+    var balance by remember { mutableStateOf(0)}
+    val user = userViewModel.userState.collectAsState().value
+
 
     Column(
         modifier = Modifier
@@ -85,9 +99,80 @@ fun RedeemScreen(
                 TicketCard(
                     ticket = ticketWithType.ticket,
                     ticketTypes = ticketWithType.ticketTypes,
-                    onClaim = { onClaimTicket(ticketWithType.ticket) }
+                    onClaim = { ticket ->
+                        selectedTicket = ticket
+                        showRedeemDialog = true
+                    }
+
+
                 )
             }
+        }
+
+        // Redeem Dialog
+        if (showRedeemDialog) {
+            val ticketWithType = ticketsWithTypes.find { it.ticket == selectedTicket } // Find the TicketWithType object
+            val pointsRequired =ticketWithType?.ticketTypes?.find { it.ticketType == "Adult" }?.let { it.pointsRequired } ?: 0
+            LaunchedEffect(user, selectedTicket) { // Add selectedTicket as a key
+                if (user != null && selectedTicket != null) {
+                    balance = user.points - pointsRequired
+                }
+            }
+
+            AlertDialog(
+                onDismissRequest = { showRedeemDialog = false },
+                title = { Text("Redeem Item") },
+                text = {
+                    Column {
+                        selectedTicket?.let { ticket ->
+                            Text("Claimed Item: ${ticket.ticketPlan}", fontSize = 16.sp)
+                        }
+                        Text("Your Points: ${user?.points ?: 0}", fontSize = 16.sp)
+                        Text("Points Required: $pointsRequired", fontSize = 16.sp)
+                        if (balance >= 0) {
+                            Text("Balance: $balance", fontSize = 16.sp, color = Color.Green)
+                        } else {
+                            Text("Points not enough", fontSize = 16.sp, color = Color.Red)
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showRedeemDialog = false
+                            if (balance >= 0) {
+                                showConfirmationDialog = true
+                                // TODO: Implement actual redemption logic here (update points, etc.)
+                            }
+                        },
+                        enabled = balance >= 0
+                    ) {
+                        Text("Confirm")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showRedeemDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
+        // Confirmation Dialog
+        if (showConfirmationDialog) {
+            AlertDialog(
+                onDismissRequest = { showConfirmationDialog = false },
+                title = { Text("Confirmation") },
+                text = { Text("Successfully claimed!") },
+                confirmButton = {
+                    Button(onClick = {
+                        showConfirmationDialog = false
+                        navController.navigate(FunParkScreen1.MainMenu.name)
+                    }) {
+                        Text("Go to Home")
+                    }
+                }
+            )
         }
     }
 }
@@ -136,7 +221,7 @@ fun Spinner(
 }
 
 @Composable
-fun TicketCard(ticket: Ticket, ticketTypes: List<TicketType>, onClaim: () -> Unit) {
+fun TicketCard(ticket: Ticket, ticketTypes: List<TicketType>, onClaim: (Ticket) -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(4.dp),
@@ -167,8 +252,8 @@ fun TicketCard(ticket: Ticket, ticketTypes: List<TicketType>, onClaim: () -> Uni
                 Text(text = "Points Required: ${type.pointsRequired}", style = MaterialTheme.typography.bodyMedium)
             }
 
-            Button(onClick = onClaim) {
-                Text("Claim")
+            Button(onClick = { onClaim(ticket) }) {
+                Text(text = "Claim")
             }
         }
     }

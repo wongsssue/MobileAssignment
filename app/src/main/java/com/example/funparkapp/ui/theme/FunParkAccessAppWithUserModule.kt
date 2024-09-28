@@ -1,5 +1,6 @@
     package com.example.funparkapp.ui.theme
 
+    import RedeemCheckoutScreen
     import TicketViewModel
     import android.content.Context
     import android.util.Log
@@ -190,15 +191,22 @@
                 startDestination = FunParkScreen1.GetStarted.name,
                 modifier = Modifier.padding(innerPadding)
             ){
+                composable(route = FunParkScreen1.Redeem.name) {RedeemScreen(
+                    ticketViewModel = ticketViewModel,
+                    navController = navController,
+                    userViewModel = userViewModel // Add userViewModel
+                )
+                }
 
-                composable(route = FunParkScreen1.Redeem.name) {
-                    RedeemScreen(
-                        ticketViewModel = ticketViewModel,
-                        onClaimTicket = { ticket ->
-                            // Handle the ticket claiming logic here
-                            // For example, you can navigate to a confirmation screen
-                            // navController.navigate(FunParkScreen1.Confirmation.name)
-                        }
+                composable(route = "${FunParkScreen1.RedeemCheckout.name}/{pointsRequired}",
+                    arguments = listOf(navArgument("pointsRequired") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val pointsRequired = backStackEntry.arguments?.getInt("pointsRequired") ?: 0
+                    RedeemCheckoutScreen(
+                        navController = navController,
+                        pointsRequired = pointsRequired,
+                        userViewModel = userViewModel,
+                        ticketViewModel = ticketViewModel
                     )
                 }
 
