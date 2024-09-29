@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.funparkapp.R
 import com.example.funparkapp.data.ReservationViewModel
 import java.text.SimpleDateFormat
@@ -30,6 +31,7 @@ fun ReservationQRScreen(
     viewCancel: String,
     reservationID: String,
     reservationViewModel: ReservationViewModel,
+    navController: NavHostController,
     goToDone: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -131,7 +133,7 @@ fun ReservationQRScreen(
                         onClick = {
                             reservationViewModel.deleteReservationById(reservationID)
                             Toast.makeText(context, "Reservation cancelled!", Toast.LENGTH_SHORT).show()
-                            goToDone("no")
+                            navController.navigate(FunParkScreen.MainMenu.name)
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA500)),
                         modifier = Modifier
@@ -148,7 +150,7 @@ fun ReservationQRScreen(
 
                 // Done Button
                 Button(
-                    onClick = {goToDone("no")},
+                    onClick = { navController.navigate(FunParkScreen.MainMenu.name) },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA500)), // Orange color
                     modifier = Modifier
                         .width(130.dp)

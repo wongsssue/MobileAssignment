@@ -16,6 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.funparkapp.R
 import com.example.funparkapp.data.PurchaseHistoryViewModel
 import com.example.funparkapp.globalVariable.TicketIDName
@@ -23,7 +24,7 @@ import com.example.funparkapp.globalVariable.TicketIDName
 @Composable
 fun ReservationTicketConfirmationScreen(
     purchaseHistoryViewModel: PurchaseHistoryViewModel,
-    goToRV: (String) -> Unit
+    navController: NavHostController
 ) {
     val context = LocalContext.current
     var ticketID by remember { mutableStateOf(0L) }
@@ -98,7 +99,7 @@ fun ReservationTicketConfirmationScreen(
                     TextButton(
                         onClick = {
                             // Skip logic: Pass viewOnly = true
-                            goToRV("yes")
+                            navController.navigate("${FunParkScreen.RVMainScreen.name}/yes")
                         }
                     ) {
                         Text(
@@ -121,7 +122,7 @@ fun ReservationTicketConfirmationScreen(
                                     if (purchase != null) {
                                         // Ticket exists, go to RV with viewOnly = false
                                         TicketIDName.ticketIDName = ticketID // Convert ticketID back to String if needed
-                                        goToRV("no")
+                                        navController.navigate("${FunParkScreen.RVMainScreen.name}/no")
                                     } else {
                                         // Ticket not found
                                         errorMessage = "Ticket not found!"

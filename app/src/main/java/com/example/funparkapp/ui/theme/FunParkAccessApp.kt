@@ -89,13 +89,13 @@ enum class FunParkScreen(@StringRes val title: Int){
     AdminManageUser(title = R.string.admin_manage_user),
     AdminManageRedeem(title = R.string.admin_manage_redeem),
     RVManagementMainScreen(title = R.string.reservation_management),
-    RVViewScreen(title = R.string.reservation_main_page),
-    RVTicketConfirmationScreen(title = R.string.reservation_main_page),
+    RVViewScreen(title = R.string.reservation_view_screen),
+    RVTicketConfirmationScreen(title = R.string.reservation_ticket_confirmation_screen),
     RVMainScreen(title = R.string.reservation_main_page),
-    RVSelectionScreen(title = R.string.reservation_main_page),
-    RVSummaryScreen(title = R.string.reservation_main_page),
-    RVDoneScreen(title = R.string.reservation_main_page),
-    RVQRScreen(title = R.string.reservation_main_page),
+    RVSelectionScreen(title = R.string.reservation_selection_screen),
+    RVSummaryScreen(title = R.string.reservation_summary_screen),
+    RVDoneScreen(title = R.string.reservation_done_screen),
+    RVQRScreen(title = R.string.reservation_qr_screen),
     RedeemHistory(title = R.string.redeem_history)
 }
 
@@ -240,6 +240,71 @@ fun FunParkAccessApp(
             modifier = Modifier.padding(innerPadding)
         ){
 
+            composable (route = FunParkScreen.RVViewScreen.name) {
+                ReservationViewScreen(
+                    reservationViewModel = reservationViewModel,
+                    facilityViewModel = facilityViewModel,
+                    goToSpecificResv = {reservationID ->
+                        navController.navigate("reservation_qr_screen/$reservationID")
+                    }
+                )
+            }
+
+            composable(
+                route = "reservation_qr_screen/{reservationID}", // Include arguments in the route
+                arguments =listOf(
+                    navArgument("reservationID") { type = NavType.StringType },
+                )
+            ) { backStackEntry ->
+                val reservationID = backStackEntry.arguments?.getString("reservationID") ?: ""
+
+                ReservationQRScreen(
+                    viewCancel = "",
+                    reservationID = reservationID,
+                    reservationViewModel = reservationViewModel,
+                    navController =navController
+                )
+            }
+
+            composable(
+                route = "reservation_done_screen/{reservationID}", // Include reservationID in the route
+                arguments = listOf(navArgument("reservationID") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val reservationID = backStackEntry.arguments?.getString("reservationID") ?: ""
+
+                ReservationDoneScreen(
+                    reservationID = reservationID,
+                    navController = navController
+                )
+            }
+
+            composable(
+                route = "reservation_summary_screen/{facilityImage}/{facilityName}/{reservationTime}/{reservationPax}",
+                arguments = listOf(
+                    navArgument("facilityImage") { type = NavType.IntType },
+                    navArgument("facilityName") { type = NavType.StringType },
+                    navArgument("reservationTime") { type = NavType.StringType },
+                    navArgument("reservationPax") { type = NavType.StringType }
+                )
+            ){ backStackEntry ->
+                val facilityImage = backStackEntry.arguments?.getInt("facilityImage") ?: 0
+                val facilityName = backStackEntry.arguments?.getString("facilityName") ?: ""
+                val reservationTime = backStackEntry.arguments?.getString("reservationTime") ?: ""
+                val reservationPax = backStackEntry.arguments?.getString("reservationPax") ?: ""
+
+
+                ReservationSummaryScreen(
+                    facilityImage = facilityImage,
+                    facilityName = facilityName,
+                    reservationTime = reservationTime,
+                    reservationPax = reservationPax,
+                    reservationViewModel = reservationViewModel,
+                    navController = navController,
+                    facilityViewModel = facilityViewModel,
+                    goToCancel = { navController.popBackStack() }
+                )
+            }
+
             composable (route = FunParkScreen.AdminManageRedeem.name) {
                 ManageRedemptionsScreen(redeemHistoryViewModel)
             }
@@ -254,7 +319,7 @@ fun FunParkAccessApp(
             composable(route = FunParkScreen.RVTicketConfirmationScreen.name) {
                 ReservationTicketConfirmationScreen(
                     purchaseHistoryViewModel = purchaseHistoryViewModel,
-                    goToRV = { navController.navigate(FunParkScreen.RVMainScreen.name) }
+                    navController = navController
                 )
             }
 
@@ -262,12 +327,38 @@ fun FunParkAccessApp(
                 ReservationManagementScreen(facilityViewModel)
             }
 
-            composable(route = FunParkScreen.RVMainScreen.name) {
+            composable (
+                route = "${FunParkScreen.RVMainScreen.name}/{viewOnly}", // Include viewOnly in the route
+                arguments = listOf(
+                    navArgument("viewOnly") { type = NavType.StringType },
+                )
+            ) {backStackEntry ->
+                val viewOnly = backStackEntry.arguments?.getString("viewOnly") ?: ""
+
                 ReservationMainScreen(
-                    viewOnly = "",
-                    facilityViewModel,
-                    goToSpecificFacility = { viewOnly, facilityName ->
-                })
+                    viewOnly = viewOnly,
+                    facilityViewModel = facilityViewModel,
+                    navController = navController
+                )
+            }
+
+            composable(
+                route = "reservation_selection_screen/{viewOnly}/{facilityName}", // Include arguments in the route
+                arguments = listOf(
+                    navArgument("viewOnly") { type = NavType.StringType },
+                    navArgument("facilityName") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val viewOnly = backStackEntry.arguments?.getString("viewOnly") ?: ""
+                val facilityName = backStackEntry.arguments?.getString("facilityName") ?: ""
+
+                ReservationSelectionScreen(
+                    viewOnly = viewOnly,
+                    facilityName = facilityName,
+                    facilityViewModel = facilityViewModel,
+                    purchaseHistoryViewModel = purchaseHistoryViewModel,
+                    navController = navController
+                )
             }
 
             composable (route = FunParkScreen.AdminManageUser.name) {

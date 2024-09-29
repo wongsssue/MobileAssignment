@@ -44,5 +44,12 @@
     <string name="admin_manage_redeem">Manage Redemptions</string>
     <string name="reservation_management">Reservation Management</string>
     <string name="reservation_main_page">Reservation</string>
-    <string name="redeem_history">Redemption History</string>"
+    <string name="redeem_history">Redemption History</string>
+    <string name="reservation_confirm">Reservation Confirmation</string>
+    <string name="reservation_view_screen">Reservations</string>
+    <string name="reservation_selection_screen">Select Reservation</string>
+    <string name="reservation_ticket_confirmation_screen">Validate Your Ticket</string>
+    <string name="reservation_summary_screen">Reservation Summary</string>
+    <string name="reservation_done_screen">Reservation Completed</string>
+    <string name="reservation_qr_screen">Reservation QR</string>
 </resources>

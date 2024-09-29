@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.funparkapp.data.Reservation
 import com.example.funparkapp.data.DateConverter
 import com.example.funparkapp.data.Facility
@@ -31,6 +32,7 @@ import com.example.funparkapp.data.ReservationViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 @Composable
 fun ReservationSummaryScreen(
@@ -40,8 +42,8 @@ fun ReservationSummaryScreen(
     reservationPax: String,
     reservationViewModel: ReservationViewModel,
     facilityViewModel: FacilityViewModel,
-    goToRVDone: (String) -> Unit,
-    goToCancel:(String) -> Unit = {}
+    goToCancel: (String) -> Unit,
+    navController: NavHostController
 ) {
     val context = LocalContext.current
     val facilityID by facilityViewModel.getFacilityIDByName(facilityName)
@@ -82,7 +84,7 @@ fun ReservationSummaryScreen(
                 onSubmitClick = {
                     reservationViewModel.insert(reservation)
                     isFormVisible = false
-                    goToRVDone(reservationID) // Navigate to the done screen with the reservationID
+                    navController.navigate("reservation_done_screen/${reservationID}")
                 }
             )
         }

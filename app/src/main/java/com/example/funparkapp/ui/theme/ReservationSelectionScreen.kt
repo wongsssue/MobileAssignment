@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.funparkapp.data.FacilityViewModel
 import com.example.funparkapp.data.PurchaseHistory
 import com.example.funparkapp.data.PurchaseHistoryViewModel
@@ -56,7 +57,7 @@ fun ReservationSelectionScreen(
     facilityName: String,
     facilityViewModel: FacilityViewModel,
     purchaseHistoryViewModel: PurchaseHistoryViewModel,
-    goToRVSummary: (Int, String, String, String) -> Unit
+    navController: NavHostController,
 ) {
     val context = LocalContext.current
     val facility by facilityViewModel.getFacilityByName(facilityName).observeAsState()
@@ -232,12 +233,7 @@ fun ReservationSelectionScreen(
                                     Toast.LENGTH_SHORT
                                 ).show()
                             } else {
-                                goToRVSummary(
-                                    f.facilityImage,
-                                    f.facilityName,
-                                    selectedTime,
-                                    selectedPax
-                                )
+                                navController.navigate("reservation_summary_screen/${facility!!.facilityImage}/${facility!!.facilityName}/${selectedTime}/${selectedPax}")
                             }
                         },
 

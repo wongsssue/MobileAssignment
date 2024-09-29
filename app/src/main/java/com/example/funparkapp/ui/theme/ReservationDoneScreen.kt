@@ -16,13 +16,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.funparkapp.R
 
 @Composable
 fun ReservationDoneScreen(
     reservationID: String,
-    goToRVQR: (String, String) -> Unit,
-    goToDone: (String) -> Unit = {}
+    navController: NavHostController
 ) {
     Column(
         modifier = Modifier
@@ -66,7 +66,7 @@ fun ReservationDoneScreen(
         Spacer(modifier = Modifier.height(40.dp))
 
         Button(
-            onClick = { goToDone("no") },
+            onClick = { navController.navigate(FunParkScreen.MainMenu.name) },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA500)),
             modifier = Modifier
                 .width(250.dp)
@@ -83,7 +83,7 @@ fun ReservationDoneScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(
-            onClick = { goToRVQR("no", reservationID) },
+            onClick = { navController.navigate("reservation_qr_screen/${reservationID}") },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA500)),
             modifier = Modifier
                 .width(250.dp)

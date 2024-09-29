@@ -38,7 +38,7 @@ import com.example.funparkapp.data.ReservationViewModel
 fun ReservationViewScreen(
     reservationViewModel: ReservationViewModel,
     facilityViewModel: FacilityViewModel,
-    goToSpecificResv: (String, String) -> Unit // Function to navigate to specific reservation
+    goToSpecificResv: (String) -> Unit // Function to navigate to specific reservation
 ) {
     val reservations by reservationViewModel.allReservation.observeAsState(emptyList())
 
@@ -62,7 +62,7 @@ fun ReservationViewScreen(
                         facilityName = it.facilityName,
                         facilityImage = it.facilityImage,
                         reservationID = reservation.reservationID, // Pass reservation ID
-                        onViewReservationClick = { goToSpecificResv("yes", reservation.reservationID) } // Pass reservation ID to the function
+                        onViewReservationClick = { goToSpecificResv(reservation.reservationID) } // Pass reservation ID to the function
                     )
                 }
             }

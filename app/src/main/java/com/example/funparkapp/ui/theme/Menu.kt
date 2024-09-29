@@ -22,7 +22,7 @@ data class MenuItem(val title: String, val route: String? = null, val icon: Int?
 val menuItems = listOf(
     MenuItem("Home", FunParkScreen.MainMenu.name),
     MenuItem("Account", FunParkScreen.Account.name),
-    MenuItem("Reservations"), // No route for this item yet
+    MenuItem("Reservations", FunParkScreen.RVViewScreen.name), // No route for this item yet
     MenuItem("Tickets", FunParkScreen.TicketHistory.name),
     MenuItem("Redeem", FunParkScreen.Redeem.name),
     MenuItem("Redemption History", FunParkScreen.RedeemHistory.name),

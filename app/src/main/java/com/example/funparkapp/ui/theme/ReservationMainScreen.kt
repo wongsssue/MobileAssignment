@@ -22,13 +22,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.funparkapp.data.FacilityViewModel
 
 @Composable
 fun ReservationMainScreen(
     viewOnly: String,
     facilityViewModel: FacilityViewModel,
-    goToSpecificFacility: (String, String) -> Unit
+    navController: NavHostController,
 ) {
     val facilities by facilityViewModel.allActiveFacility.observeAsState(emptyList())
 
@@ -47,7 +48,9 @@ fun ReservationMainScreen(
                     facilityName = facility.facilityName,
                     facilityDesc = facility.facilityDesc,
                     facilityImage = facility.facilityImage,
-                    onFacilityClick = { goToSpecificFacility(viewOnly, facility.facilityName) }
+                    onFacilityClick = {
+                        navController.navigate("reservation_selection_screen/${viewOnly}/${facility.facilityName}")
+                    }
                 )
             }
         }
@@ -70,13 +73,13 @@ fun FacilityCard(
     facilityName: String,
     facilityDesc: String,
     facilityImage: Int,
-    onFacilityClick: (String) -> Unit
+    onFacilityClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth()
-            .clickable { onFacilityClick(facilityName) }, // Handle item click here
+            .clickable { onFacilityClick() }, // Handle item click here
     ) {
         Row(
             modifier = Modifier
