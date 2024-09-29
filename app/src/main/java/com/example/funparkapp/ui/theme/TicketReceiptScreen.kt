@@ -77,10 +77,10 @@ fun TicketReceiptScreen(
                     .fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA))
                 ){
-                    val validTo = calculateValidToDate(purchase.ticketPlan, purchase.purchasedDate)
+                    val validTo = calculateValidToDate(ticketItem.ticketPlan, purchase.purchasedDate)
                     TicketDetailRow(label = "Valid From", value = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(purchase.purchasedDate))
                     TicketDetailRow(label = "Valid To", value = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(validTo))
-                    TicketDetailRow(label = "Ticket Plan", value = purchase.ticketPlan)
+                    TicketDetailRow(label = "Ticket Plan", value = ticketItem.ticketPlan)
                     TicketDetailRow(label = "Ticket Type", value = ticketItem.ticketType)
                     TicketDetailRow(label = "Qty", value = ticketItem.qty.toString())
                 }
