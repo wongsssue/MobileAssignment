@@ -162,6 +162,12 @@ fun CheckoutScreen(
                     pricePaid = total,
                     purchasedDate = Date()
                 )
+
+                val pointsAwarded = (total * 2).toInt()
+                if (username != null) {
+                    userViewModel.updateUserPoints(username, pointsAwarded)
+                }// Update user points (don't remove)
+
                 val purchasedItems = cartItems.map { cartItem ->
                     PurchasedItem(
                         itemId = 0L,
