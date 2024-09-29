@@ -22,13 +22,13 @@ data class MenuItem(val title: String, val route: String? = null, val icon: Int?
 val menuItems = listOf(
     MenuItem("Home", FunParkScreen.MainMenu.name),
     MenuItem("Account", FunParkScreen.Account.name),
-    MenuItem("Reservations", FunParkScreen.RVViewScreen.name), // No route for this item yet
+    MenuItem("Reservations", FunParkScreen.RVViewScreen.name),
     MenuItem("Tickets", FunParkScreen.TicketHistory.name),
     MenuItem("Redeem", FunParkScreen.Redeem.name),
     MenuItem("Redemption History", FunParkScreen.RedeemHistory.name),
-    MenuItem("Map"),    // No route for this item yet
-    MenuItem("Souvenirs"), // No route for this item yet
-    MenuItem("Purchased Souvenirs")
+    MenuItem("Map", "map"),
+    MenuItem("Souvenirs", "souvenir"),
+    MenuItem("Purchased Souvenirs", "purchase_history")
 )
 
 @Composable

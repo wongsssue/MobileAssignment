@@ -40,9 +40,12 @@ import com.example.funparkapp.data.AppDatabase
 import com.example.funparkapp.data.CartItemRepository
 import com.example.funparkapp.data.CartItemViewModel
 import com.example.funparkapp.data.CartItemViewModelFactory
+import com.example.funparkapp.data.CartSouvenir
+import com.example.funparkapp.data.CartSouvenirViewModel
 import com.example.funparkapp.data.FacilityRepository
 import com.example.funparkapp.data.FacilityViewModel
 import com.example.funparkapp.data.FacilityViewModelFactory
+import com.example.funparkapp.data.MapViewModel
 import com.example.funparkapp.data.PaymentMethodRepository
 import com.example.funparkapp.data.PaymentMethodViewModel
 import com.example.funparkapp.data.PaymentMethodViewModelFactory
@@ -67,6 +70,10 @@ import com.google.firebase.database.FirebaseDatabase
 import com.example.funparkapp.data.RedeemHistoryDao
 import com.example.funparkapp.data.RedeemHistoryViewModel
 import com.example.funparkapp.data.RedeemHistoryViewModelFactory
+import com.example.funparkapp.data.Souvenir
+import com.example.funparkapp.data.SouvenirViewModel
+import com.example.funparkapp.data.ThemeViewModel
+import com.google.gson.Gson
 
 
 enum class FunParkScreen(@StringRes val title: Int){
@@ -96,7 +103,14 @@ enum class FunParkScreen(@StringRes val title: Int){
     RVSummaryScreen(title = R.string.reservation_summary_screen),
     RVDoneScreen(title = R.string.reservation_done_screen),
     RVQRScreen(title = R.string.reservation_qr_screen),
-    RedeemHistory(title = R.string.redeem_history)
+    RedeemHistory(title = R.string.redeem_history),
+    AdminManageSouvenir(title = R.string.admin_manage_souvenir),
+    CartScreen(title = R.string.cart_screen),
+    CheckoutSouvenirScreen(title = R.string.checkout_souvenir_screen),
+    MapScreen(title = R.string.map_screen),
+    PaymentSuccessScreen(title = R.string.payment_success_screen),
+    PurchaseSouvenirHistoryScreen(title = R.string.purchase_souvenir_history_screen),
+    SouvenirScreen(title = R.string.souvenir_screen),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -145,9 +159,14 @@ fun AppBar(
 
 @Composable
 fun FunParkAccessApp(
+    souvenirViewModel: SouvenirViewModel,
+    cartSouvenirViewModel: CartSouvenirViewModel,
+    themeViewModel: ThemeViewModel,
+    mapViewModel: MapViewModel,
     navController: NavHostController = rememberNavController(),
     context: Context = LocalContext.current
 ) {
+
     // Initialize coroutine scope
     val coroutineScope = rememberCoroutineScope()
 
@@ -219,6 +238,13 @@ fun FunParkAccessApp(
         currentRoute == FunParkScreen.RVManagementMainScreen.name -> FunParkScreen.RVManagementMainScreen
         currentRoute == FunParkScreen.RVTicketConfirmationScreen.name -> FunParkScreen.RVTicketConfirmationScreen
         currentRoute == FunParkScreen.RedeemHistory.name -> FunParkScreen.RedeemHistory
+        currentRoute == FunParkScreen.AdminManageSouvenir.name -> FunParkScreen.AdminManageSouvenir
+        currentRoute == FunParkScreen.CartScreen.name -> FunParkScreen.CartScreen
+        currentRoute == FunParkScreen.CheckoutSouvenirScreen.name -> FunParkScreen.CheckoutSouvenirScreen
+        currentRoute == FunParkScreen.MapScreen.name -> FunParkScreen.MapScreen
+        currentRoute == FunParkScreen.PaymentSuccessScreen.name -> FunParkScreen.PaymentSuccessScreen
+        currentRoute == FunParkScreen.PurchaseSouvenirHistoryScreen.name -> FunParkScreen.PurchaseSouvenirHistoryScreen
+        currentRoute == FunParkScreen.SouvenirScreen.name -> FunParkScreen.SouvenirScreen
 
         else -> FunParkScreen.MainMenu
     }
@@ -239,6 +265,93 @@ fun FunParkAccessApp(
             startDestination = FunParkScreen.GetStarted.name,
             modifier = Modifier.padding(innerPadding)
         ){
+
+            composable("adminSouvenirs") {
+                AdminScreen(souvenirViewModel = souvenirViewModel, navController = navController)
+            }
+            composable("add_souvenir") {
+                AddSouvenirScreen(souvenirViewModel = souvenirViewModel, navController = navController)
+            }
+            composable("delete_souvenir") {
+                DeleteSouvenirScreen(souvenirViewModel = souvenirViewModel, navController = navController)
+            }
+            composable("view_souvenir") {
+                ViewSouvenirsScreen(souvenirViewModel = souvenirViewModel)
+            }
+            composable("modify_souvenir") {
+                ModifySouvenirScreen(souvenirViewModel = souvenirViewModel, navController = navController)
+            }
+
+            composable("map") {
+                MapScreen(navController = navController, viewModel = mapViewModel)
+            }
+
+            composable("souvenir") {
+                SouvenirScreen(
+                    souvenirViewModel = souvenirViewModel,
+                    onAddToCart = { souvenir, quantity -> cartSouvenirViewModel.addCartItem(souvenir, quantity) },
+                    navigateToCart = { navController.navigate("cart") },
+                    themeViewModel = themeViewModel
+                )
+            }
+            composable("cart") {
+                val cartItems by cartSouvenirViewModel.cartSouvenir.collectAsState()
+                val allSouvenirs by cartSouvenirViewModel.allSouvenirs.collectAsState()
+
+                LaunchedEffect(Unit) {
+                    if (allSouvenirs.isEmpty()) {
+                        cartSouvenirViewModel.fetchSouvenirs()
+                    }
+                }
+
+                CartScreen(
+                    cartItems = cartItems,
+                    onRemove = { cartItem: CartSouvenir -> cartSouvenirViewModel.removeCartItem(cartItem) },
+                    onIncreaseQuantity = { cartItem: CartSouvenir -> cartSouvenirViewModel.increaseQuantity(cartItem) },
+                    onDecreaseQuantity = { cartItem: CartSouvenir -> cartSouvenirViewModel.decreaseQuantity(cartItem) },
+                    onSelectAll = { selectAll -> cartSouvenirViewModel.selectAll(selectAll) },
+                    onCheckout = {
+                        val selectedItems = cartItems.filter { it.selected }
+                        navController.navigate("checkout/${Gson().toJson(selectedItems)}/${Gson().toJson(allSouvenirs)}")
+                    },
+                    allSouvenirs = allSouvenirs
+                )
+            }
+
+            composable("checkout/{selectedItems}/{allSouvenirs}") { backStackEntry ->
+                val selectedItemsJson = backStackEntry.arguments?.getString("selectedItems")
+                val allSouvenirsJson = backStackEntry.arguments?.getString("allSouvenirs")
+
+                val selectedItems: List<CartSouvenir> = Gson().fromJson(selectedItemsJson, Array<CartSouvenir>::class.java).toList()
+                val allSouvenirs: List<Souvenir> = Gson().fromJson(allSouvenirsJson, Array<Souvenir>::class.java).toList()
+
+                CheckoutScreen(
+                    selectedItems = selectedItems,
+                    allSouvenirs = allSouvenirs,
+                    onConfirmPayment = { paymentMethod ->
+                    },
+                    onViewHistory = {
+                        navController.navigate("purchase_history") // Navigate to purchase history
+                    },
+                    onBackToHome = {
+                        navController.navigate("map") // Navigate back to home
+                    }
+                )
+            }
+
+            composable("confirmation") {
+                PaymentSuccessScreen(
+                    onViewHistory = { navController.navigate("purchase_history") },
+                    onBackToHome = { navController.popBackStack("map", false) } // Navigate back to the map
+                )
+            }
+
+            composable("purchase_history") {
+                PurchaseSouvenirHistoryScreen(
+
+                    onBackToHome = { navController.popBackStack("map", false) } // Navigate back to the map
+                )
+            }
 
             composable (route = FunParkScreen.RVViewScreen.name) {
                 ReservationViewScreen(

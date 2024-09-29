@@ -22,7 +22,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
     PaymentMethod::class,
     Facility:: class,
     Reservation::class,
-    RedeemHistory::class], version = 10)
+    RedeemHistory::class,
+    CartSouvenir::class,
+    Souvenir::class], version = 11)
 
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -34,6 +36,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract val facilityDao: FacilityDao
     abstract val reservationDao: ReservationDao
     abstract val redeemHistoryDao: RedeemHistoryDao
+    abstract val cartSouvenirDao: CartSouvenirDao
+    abstract val souvenirDao: SouvenirDao
 
     companion object {
         @Volatile

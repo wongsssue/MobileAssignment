@@ -52,4 +52,11 @@
     <string name="reservation_summary_screen">Reservation Summary</string>
     <string name="reservation_done_screen">Reservation Completed</string>
     <string name="reservation_qr_screen">Reservation QR</string>
+    <string name="admin_manage_souvenir">Manage Souvenirs</string>
+    <string name="cart_screen">Cart</string>
+    <string name="checkout_souvenir_screen">Checkout</string>
+    <string name="map_screen">Map</string>
+    <string name="payment_success_screen">Payment Successful</string>
+    <string name="purchase_souvenir_history_screen">Purchase History</string>
+    <string name="souvenir_screen">Souvenirs</string>"
 </resources>

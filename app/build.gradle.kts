@@ -76,7 +76,7 @@ dependencies {
 
     implementation ("androidx.compose.ui:ui:1.5.0") 
     implementation ("androidx.compose.material3:material3:1.0.0")
-
+    implementation("androidx.compose.material:material-icons-extended:1.5.0")
     // Room components
     implementation("androidx.room:room-runtime:2.5.0")
     //annotationProcessor("androidx.room:room-compiler:2.5.0")
@@ -87,6 +87,9 @@ dependencies {
 
     //QR code
     implementation ("com.google.zxing:core:3.4.1")
+
+    //Gson
+    implementation("com.google.code.gson:gson:2.10")
 
     //PriceRange
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.5.1")
