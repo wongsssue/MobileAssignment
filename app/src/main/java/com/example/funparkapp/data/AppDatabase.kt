@@ -22,7 +22,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
     PaymentMethod::class,
     Facility:: class,
     Reservation::class,
-    RedeemHistory::class], version = 9)
+    RedeemHistory::class], version = 10)
 
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

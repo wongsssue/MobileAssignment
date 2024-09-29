@@ -61,7 +61,6 @@ fun ReservationSelectionScreen(
 ) {
     val context = LocalContext.current
     val facility by facilityViewModel.getFacilityByName(facilityName).observeAsState()
-    val purchaseHistory by purchaseHistoryViewModel.getPurchaseByTicketID(TicketIDName.ticketIDName!!).observeAsState()
 
     val qtyMap by purchaseHistoryViewModel.qtyMap.observeAsState(emptyMap()) // Observe qtyMap// Calculate total quantity from qtyMap
     val totalQty = qtyMap.values.sum()
