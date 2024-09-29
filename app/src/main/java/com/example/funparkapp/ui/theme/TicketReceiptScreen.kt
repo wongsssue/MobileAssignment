@@ -31,7 +31,6 @@ import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 
@@ -77,9 +76,8 @@ fun TicketReceiptScreen(
                     .fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA))
                 ){
-                    val validTo = calculateValidToDate(ticketItem.ticketPlan, purchase.purchasedDate)
-                    TicketDetailRow(label = "Valid From", value = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(purchase.purchasedDate))
-                    TicketDetailRow(label = "Valid To", value = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(validTo))
+                    TicketDetailRow(label = "Valid From", value = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(ticketItem.validFrom))
+                    TicketDetailRow(label = "Valid To", value = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(ticketItem.validTo))
                     TicketDetailRow(label = "Ticket Plan", value = ticketItem.ticketPlan)
                     TicketDetailRow(label = "Ticket Type", value = ticketItem.ticketType)
                     TicketDetailRow(label = "Qty", value = ticketItem.qty.toString())
@@ -141,18 +139,6 @@ fun TicketDetailRow(label: String, value: String) {
 }
 
 private fun Double.format(digits: Int) = "%.${digits}f".format(this)
-
-fun calculateValidToDate(ticketPlan: String, payDate: Date): Date {
-    val calendar = java.util.Calendar.getInstance()
-    calendar.time = payDate
-    when (ticketPlan) {
-        "One Day Pass" -> calendar.add(java.util.Calendar.DAY_OF_YEAR, 1)
-        "Two Day Pass" -> calendar.add(java.util.Calendar.DAY_OF_YEAR, 2)
-        "Ultimate Pass (1 Year)" -> calendar.add(java.util.Calendar.YEAR, 1)
-    }
-    return calendar.time
-}
-
 
 fun generateQRCode(content: String): Bitmap? {
     val writer = QRCodeWriter()

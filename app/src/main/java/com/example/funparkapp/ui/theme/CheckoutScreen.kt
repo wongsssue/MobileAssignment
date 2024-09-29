@@ -157,10 +157,11 @@ fun CheckoutScreen(
         Button(
             onClick = {
                 val generatedPurchaseId = (100000..999999).random().toLong()
+                val purchaseDate = Date()
                 val purchaseHistory = PurchaseHistory(
                     id = generatedPurchaseId,
                     pricePaid = total,
-                    purchasedDate = Date()
+                    purchasedDate = purchaseDate
                 )
 
                 val pointsAwarded = (total * 2).toInt()
@@ -169,11 +170,15 @@ fun CheckoutScreen(
                 }// Update user points (don't remove)
 
                 val purchasedItems = cartItems.map { cartItem ->
+                    val validFrom = purchaseDate
+                    val validTo = calculateValidToDate(cartItem.ticketPlan, validFrom)
                     PurchasedItem(
                         itemId = 0L,
                         id = generatedPurchaseId,
                         ticketPlan = cartItem.ticketPlan,
                         ticketType = cartItem.ticketType,
+                        validFrom= validFrom,
+                        validTo = validTo,
                         qty = cartItem.quantity
                     )
                 }
@@ -206,6 +211,18 @@ fun CheckoutScreen(
         }
     }
 }
+
+fun calculateValidToDate(ticketPlan: String, payDate: Date): Date {
+    val calendar = java.util.Calendar.getInstance()
+    calendar.time = payDate
+    when (ticketPlan) {
+        "One Day Pass" -> calendar.add(java.util.Calendar.DAY_OF_YEAR, 1)
+        "Two Day Pass" -> calendar.add(java.util.Calendar.DAY_OF_YEAR, 2)
+        "Ultimate Pass (1 Year)" -> calendar.add(java.util.Calendar.YEAR, 1)
+    }
+    return calendar.time
+}
+
 
 @Composable
 fun PayMethod(

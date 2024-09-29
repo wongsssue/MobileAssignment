@@ -36,6 +36,8 @@ class PurchaseHistoryRepository(
                     "itemId" to item.itemId,
                     "ticketPlan" to item.ticketPlan,
                     "ticketType" to item.ticketType,
+                    "validFrom" to item.validFrom,
+                    "validTo" to item.validTo,
                     "qty" to item.qty
                 )
             }
