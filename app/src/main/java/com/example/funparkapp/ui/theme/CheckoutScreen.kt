@@ -157,18 +157,19 @@ fun CheckoutScreen(
         Button(
             onClick = {
                 val generatedPurchaseId = (100000..999999).random().toLong()
+                val ticketPlan = cartItems.firstOrNull()?.ticketPlan ?: "Default Plan"
+
                 val purchaseHistory = PurchaseHistory(
                     id = generatedPurchaseId,
+                    ticketPlan = ticketPlan,
                     pricePaid = total,
-                    purchasedDate = Date(),
+                    purchasedDate = Date()
                 )
-                val pointsAwarded = (total * 2).toInt()
-                username?.let { userViewModel.updateUserPoints(it, pointsAwarded) }
+
                 val purchasedItems = cartItems.map { cartItem ->
                     PurchasedItem(
                         itemId = 0L,
                         id = generatedPurchaseId,
-                        ticketPlan = cartItem.ticketPlan,
                         ticketType = cartItem.ticketType,
                         qty = cartItem.quantity
                     )
@@ -184,7 +185,9 @@ fun CheckoutScreen(
                     cartItems.forEach { cartItemViewModel.deleteCartItem(it) }
                 }
             },
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
         ) {
             Text(text = "Place Order", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }

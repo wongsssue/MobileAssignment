@@ -11,7 +11,7 @@ data class PurchaseHistory(
     val ticketPlan:String= "",
     val pricePaid: Double = 0.0,
     val purchasedDate: Date = Date()
-) {
+)
 
 
-}
+
