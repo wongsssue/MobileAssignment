@@ -4,10 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.lifecycle.lifecycleScope
+import com.example.funparkapp.data.AppDatabase
+import com.example.funparkapp.data.UserType
 import com.example.funparkapp.ui.theme.FunParkAccessApp
 import com.example.funparkapp.ui.theme.FunParkAppTheme
 import com.google.firebase.FirebaseApp
-
+import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
@@ -21,7 +24,7 @@ class MainActivity : ComponentActivity() {
                FunParkAccessApp()
             }
         }
-//
+
 //        lifecycleScope.launch {
 //            val appDatabase = AppDatabase.getDatabase(this@MainActivity)
 //            val userDao = appDatabase.userDao
