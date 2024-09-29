@@ -8,7 +8,6 @@ import java.util.Date
 data class PurchaseHistory(
     @PrimaryKey
     val id: Long = 0L,
-    val ticketPlan:String= "",
     val pricePaid: Double = 0.0,
     val purchasedDate: Date = Date()
 )
