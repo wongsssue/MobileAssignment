@@ -1,12 +1,12 @@
 package com.example.funparkapp.ui.theme
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +20,7 @@ import androidx.navigation.NavHostController
 import com.example.funparkapp.R
 import com.example.funparkapp.data.PurchaseHistoryViewModel
 import com.example.funparkapp.globalVariable.TicketIDName
+import java.util.Date
 
 @Composable
 fun ReservationTicketConfirmationScreen(
@@ -118,11 +119,21 @@ fun ReservationTicketConfirmationScreen(
                                 errorMessage = "Please enter a valid Ticket ID"
                             } else {
                                 // Check if the ticket exists
-                                purchaseHistoryViewModel.getPurchaseByTicketID(ticketID).observeForever { purchase ->
+                                purchaseHistoryViewModel.getPurchasedItemByTicketID(ticketID).observeForever { purchase ->
                                     if (purchase != null) {
-                                        // Ticket exists, go to RV with viewOnly = false
-                                        TicketIDName.ticketIDName = ticketID // Convert ticketID back to String if needed
-                                        navController.navigate("${FunParkScreen.RVMainScreen.name}/no")
+                                        // Retrieve validFrom and validTo from the purchase object
+                                        val validFrom = purchase.validFrom
+                                        val validTo = purchase.validTo
+
+                                        val today = Date() // Current date
+                                        // Check if today's date is within the validFrom and validTo range
+                                        if (today < validFrom || today > validTo) {
+                                            errorMessage = "Ticket expired!"
+                                        } else {
+                                            // Ticket is valid, go to RV with viewOnly = false
+                                            TicketIDName.ticketIDName = ticketID
+                                            navController.navigate("${FunParkScreen.RVMainScreen.name}/no")
+                                        }
                                     } else {
                                         // Ticket not found
                                         errorMessage = "Ticket not found!"
@@ -138,6 +149,7 @@ fun ReservationTicketConfirmationScreen(
                             color = Color.White
                         )
                     }
+
                 }
             }
         }

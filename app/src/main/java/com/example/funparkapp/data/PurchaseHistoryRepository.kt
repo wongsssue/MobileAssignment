@@ -95,6 +95,11 @@ class PurchaseHistoryRepository(
     fun getPurchaseByTicketID(ticketID: Long): LiveData<PurchaseHistory> {
         return purchasedTicketDao.getPurchaseByTicketID(ticketID)
     }
+
+    fun getPurchasedItemByTicketID(ticketID: Long): LiveData<PurchasedItem> {
+        return purchasedTicketDao.getPurchasedItemByTicketID(ticketID)
+    }
+
     fun getPurchaseWithTicketsById(ticketID: Long): LiveData<PurchaseWithTickets> {
         val result = MediatorLiveData<PurchaseWithTickets>()
 

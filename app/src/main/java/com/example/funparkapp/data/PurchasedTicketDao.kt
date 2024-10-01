@@ -37,4 +37,7 @@ interface PurchasedTicketDao {
             insertPurchasedItem(item.copy(id = purchaseId))
         }
     }
+
+    @Query("SELECT * FROM item_purchased WHERE id = :ticketID")
+    fun getPurchasedItemByTicketID(ticketID: Long): LiveData<PurchasedItem>
 }

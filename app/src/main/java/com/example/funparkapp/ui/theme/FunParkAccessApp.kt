@@ -353,29 +353,29 @@ fun FunParkAccessApp(
                 )
             }
 
-            composable (route = FunParkScreen.RVViewScreen.name) {
+            composable(route = FunParkScreen.RVViewScreen.name){
                 ReservationViewScreen(
                     reservationViewModel = reservationViewModel,
                     facilityViewModel = facilityViewModel,
-                    goToSpecificResv = {reservationID ->
-                        navController.navigate("reservation_qr_screen/$reservationID")
-                    }
+                    navController = navController
                 )
             }
 
             composable(
-                route = "reservation_qr_screen/{reservationID}", // Include arguments in the route
+                route = "reservation_qr_screen/{viewcancel}/{reservationID}", // Include arguments in the route
                 arguments =listOf(
+                    navArgument("viewcancel") { type = NavType.StringType },
                     navArgument("reservationID") { type = NavType.StringType },
                 )
             ) { backStackEntry ->
+                val viewcancel = backStackEntry.arguments?.getString("viewcancel") ?: ""
                 val reservationID = backStackEntry.arguments?.getString("reservationID") ?: ""
 
                 ReservationQRScreen(
-                    viewCancel = "",
+                    viewCancel = viewcancel,
                     reservationID = reservationID,
                     reservationViewModel = reservationViewModel,
-                    navController =navController
+                    navController = navController
                 )
             }
 

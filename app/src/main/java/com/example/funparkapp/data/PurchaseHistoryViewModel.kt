@@ -20,6 +20,10 @@ class PurchaseHistoryViewModel(private val repository: PurchaseHistoryRepository
         return repository.getPurchaseByTicketID(ticketID)
     }
 
+    fun getPurchasedItemByTicketID(ticketID: Long): LiveData<PurchasedItem> {
+        return repository.getPurchasedItemByTicketID(ticketID)
+    }
+
     init {
 
         _qtyMap.addSource(repository.allPurchasedTickets) { purchaseList ->

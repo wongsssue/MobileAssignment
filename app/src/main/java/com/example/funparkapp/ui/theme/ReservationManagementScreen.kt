@@ -69,6 +69,11 @@ fun ReservationManagementScreen(
     val context = LocalContext.current
     val facilities by FacilityViewModel.allFacility.observeAsState(emptyList())
     var facilityNameUpdate by remember { mutableStateOf("") }
+    var facilityAvailability by remember { mutableStateOf(false) }
+    var facilityDateFromOriginal by remember { mutableStateOf("") }
+    var facilityDateToOriginal by remember { mutableStateOf("") }
+    var facilityTimeFromOriginal by remember { mutableStateOf("") }
+    var facilityTimeToOriginal by remember { mutableStateOf("") }
     var isFormVisibleAdd by remember { mutableStateOf(false) }
     var isFormVisibleUpdate by remember { mutableStateOf(false) }
     var facilityCount by remember { mutableStateOf(0) }
@@ -94,6 +99,7 @@ fun ReservationManagementScreen(
         Column(modifier = Modifier.padding(innerPadding)) {
             if (isFormVisibleAdd) {
                 FacilityFormAdd(
+                    facilities,
                     facilityCount,
                     onCancelClick = { isFormVisibleAdd = false },
                     onSubmitClick = { facility: Facility ->
@@ -105,11 +111,17 @@ fun ReservationManagementScreen(
             }
             if (isFormVisibleUpdate) {
                 FacilityFormUpdate(
+                    facilityAvailability,
+                    facilityDateFromOriginal,
+                    facilityDateToOriginal,
+                    facilityTimeFromOriginal,
+                    facilityTimeToOriginal,
                     facilityNameUpdate,
                     onCancelClick = { isFormVisibleUpdate = false },
                     onSubmitClick = { parsedDateFrom, parsedDateTo, facilityTimeFrom, facilityTimeTo, isAvailable, facilityNameUpdate ->
                         FacilityViewModel.update(parsedDateFrom, parsedDateTo, facilityTimeFrom, facilityTimeTo, isAvailable, facilityNameUpdate)
-                        Toast.makeText(context, "Facility: " + facilityNameUpdate + "Updated!", Toast.LENGTH_SHORT).show()
+                        val availabilityStatus = if (isAvailable) "available" else "unavailable"
+                        Toast.makeText(context, "Facility: $facilityNameUpdate updated to $availabilityStatus!", Toast.LENGTH_SHORT).show()
                         isFormVisibleUpdate = false
                     }
                 )
@@ -118,9 +130,17 @@ fun ReservationManagementScreen(
             LazyColumn {
                 items(facilities) { facility ->
                     FacilityCardManagement(
+                        facilityAvailability = facility.facilityAvailability,
+                        facilityTimeFrom = facility.facilityTimeFrom,
+                        facilityTimeTo = facility.facilityTimeTo,
                         facilityName = facility.facilityName,
                         facilityImage = facility.facilityImage,
                         onEditClick = {
+                            facilityAvailability = facility.facilityAvailability
+                            facilityDateFromOriginal = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(facility.facilityDateFrom)
+                            facilityDateToOriginal = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(facility.facilityDateTo)
+                            facilityTimeFromOriginal = facility.facilityTimeFrom
+                            facilityTimeToOriginal = facility.facilityTimeTo
                             facilityNameUpdate = facility.facilityName
                             isFormVisibleUpdate = true
                         },
@@ -137,6 +157,7 @@ fun ReservationManagementScreen(
 
 @Composable
 fun FacilityFormAdd(
+    facilities: List<Facility>,
     count: Int,
     onCancelClick: () -> Unit,
     onSubmitClick: (Facility) -> Unit
@@ -183,6 +204,10 @@ fun FacilityFormAdd(
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
         )
+
+        // Set the minimum date to the current date
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis()
+
         datePickerDialog.show()
     }
 
@@ -192,12 +217,20 @@ fun FacilityFormAdd(
             context,
             { _, hourOfDay, minute ->
                 val selectedTime = String.format("%02d:%02d", hourOfDay, minute)
-                onTimeSelected(selectedTime)
+
+                // Check if the selected time is between 10:00 and 18:00
+                if (hourOfDay in 10..17 || (hourOfDay == 18 && minute == 0)) {
+                    onTimeSelected(selectedTime) // Valid time, proceed with selection
+                } else {
+                    Toast.makeText(context, "Please select a time between 10:00 and 18:00", Toast.LENGTH_SHORT).show()
+                }
             },
             calendar.get(Calendar.HOUR_OF_DAY),
             calendar.get(Calendar.MINUTE),
             true // 24-hour format
         )
+
+        // Show the time picker
         timePickerDialog.show()
     }
 
@@ -364,162 +397,165 @@ fun FacilityFormAdd(
                     }
                 }
 
-                // Select date
-                item {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Select Date:",
-                            modifier = Modifier.width(150.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                }
-
-                // DatePicker and TimePicker fields
-                item {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "From:",
-                            modifier = Modifier.width(48.dp)
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-
-                        TextField(
-                            value = facilityDateFrom,
-                            onValueChange = { facilityDateFrom = it },
-                            modifier = Modifier
-                                .width(125.dp)
-                                .clickable {
-                                    showDatePicker { selectedDate ->
-                                        facilityDateFrom = selectedDate
-
-                                        // Check if the selected DateFrom is greater than DateTo
-                                        if (facilityDateTo.isNotEmpty() && SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
-                                                facilityDateFrom)!! > SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(facilityDateTo)!!) {
-                                            // Show error message and reset DateFrom
-                                            Toast.makeText(context, "To Date cannot be less than From Date", Toast.LENGTH_SHORT).show()
-                                            facilityDateFrom = "" // Resetting DateFrom
-                                        }
-                                    }
-                                },
-                            enabled = false
-                        )
+                if (!isAvailable)
+                {
+                    // Select date
+                    item {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Select Date:",
+                                modifier = Modifier.width(150.dp)
+                            )
+                        }
                         Spacer(modifier = Modifier.width(10.dp))
-
-                        Text(
-                            text = "To:",
-                            modifier = Modifier.width(25.dp)
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-
-                        TextField(
-                            value = facilityDateTo,
-                            onValueChange = { facilityDateTo = it },
-                            modifier = Modifier
-                                .width(120.dp)
-                                .clickable {
-                                    showDatePicker { selectedDate ->
-                                        facilityDateTo = selectedDate
-
-                                        // Check if the selected DateFrom is greater than DateTo
-                                        if (facilityDateFrom.isNotEmpty() && SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
-                                                facilityDateFrom)!! > SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(facilityDateTo)!!) {
-                                            // Show error message and reset DateTo
-                                            Toast.makeText(context, "To Date cannot be less than From Date", Toast.LENGTH_SHORT).show()
-                                            facilityDateTo = "" // Resetting DateTo
-                                        }
-                                    }
-                                },
-                            enabled = false,
-                            readOnly = true
-                        )
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
 
-                // Select time
-                item {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Select Time:",
-                            modifier = Modifier.width(150.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                }
+                    // DatePicker and TimePicker fields
+                    item {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "From:",
+                                modifier = Modifier.width(48.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
 
-                // From and To Time pickers
-                item {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "From:",
-                            modifier = Modifier.width(48.dp)
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
+                            TextField(
+                                value = facilityDateFrom,
+                                onValueChange = { facilityDateFrom = it },
+                                modifier = Modifier
+                                    .width(125.dp)
+                                    .clickable {
+                                        showDatePicker { selectedDate ->
+                                            facilityDateFrom = selectedDate
 
-                        TextField(
-                            value = facilityTimeFrom,
-                            onValueChange = { facilityTimeFrom = it },
-                            modifier = Modifier
-                                .width(125.dp)
-                                .clickable {
-                                    showTimePicker { selectedTime ->
-                                        facilityTimeFrom = selectedTime
-
-                                        // Check if the selected TimeFrom is greater than TimeTo
-                                        if (facilityTimeTo.isNotEmpty() && SimpleDateFormat("HH:mm", Locale.getDefault()).parse(
-                                                facilityTimeFrom)!! > SimpleDateFormat("HH:mm", Locale.getDefault()).parse(facilityTimeTo)!!) {
-                                            // Show error message and reset TimeFrom
-                                            Toast.makeText(context, "To Time cannot be less than Time Date", Toast.LENGTH_SHORT).show()
-                                            facilityTimeFrom = "" // Resetting TimeFrom
+                                            // Check if the selected DateFrom is greater than DateTo
+                                            if (facilityDateTo.isNotEmpty() && SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
+                                                    facilityDateFrom)!! > SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(facilityDateTo)!!) {
+                                                // Show error message and reset DateFrom
+                                                Toast.makeText(context, "To Date cannot be less than From Date", Toast.LENGTH_SHORT).show()
+                                                facilityDateFrom = "" // Resetting DateFrom
+                                            }
                                         }
-                                    }
-                                },
-                            enabled = false
-                        )
+                                    },
+                                enabled = false
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            Text(
+                                text = "To:",
+                                modifier = Modifier.width(25.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+
+                            TextField(
+                                value = facilityDateTo,
+                                onValueChange = { facilityDateTo = it },
+                                modifier = Modifier
+                                    .width(125.dp)
+                                    .clickable {
+                                        showDatePicker { selectedDate ->
+                                            facilityDateTo = selectedDate
+
+                                            // Check if the selected DateFrom is greater than DateTo
+                                            if (facilityDateFrom.isNotEmpty() && SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
+                                                    facilityDateFrom)!! > SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(facilityDateTo)!!) {
+                                                // Show error message and reset DateTo
+                                                Toast.makeText(context, "To Date cannot be less than From Date", Toast.LENGTH_SHORT).show()
+                                                facilityDateTo = "" // Resetting DateTo
+                                            }
+                                        }
+                                    },
+                                enabled = false,
+                                readOnly = true
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+
+                    // Select time
+                    item {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Select Time:",
+                                modifier = Modifier.width(150.dp)
+                            )
+                        }
                         Spacer(modifier = Modifier.width(10.dp))
-
-                        Text(
-                            text = "To:",
-                            modifier = Modifier.width(25.dp)
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-
-                        TextField(
-                            value = facilityTimeTo,
-                            onValueChange = { facilityTimeTo = it },
-                            modifier = Modifier
-                                .width(125.dp)
-                                .clickable {
-                                    showTimePicker { selectedTime ->
-                                        facilityTimeTo = selectedTime
-
-                                        // Check if the selected TimeFrom is greater than TimeTo
-                                        if (facilityTimeFrom.isNotEmpty() && SimpleDateFormat("HH:mm", Locale.getDefault()).parse(
-                                                facilityTimeFrom)!! > SimpleDateFormat("HH:mm", Locale.getDefault()).parse(facilityTimeTo)!!) {
-                                            // Show error message and reset TimeTo
-                                            Toast.makeText(context, "To Time cannot be less than Time Date", Toast.LENGTH_SHORT).show()
-                                            facilityTimeTo = "" // Resetting TimeTo
-                                        }
-                                    }
-                                },
-                            enabled = false,
-                            readOnly = true
-                        )
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // From and To Time pickers
+                    item {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "From:",
+                                modifier = Modifier.width(48.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+
+                            TextField(
+                                value = facilityTimeFrom,
+                                onValueChange = { facilityTimeFrom = it },
+                                modifier = Modifier
+                                    .width(125.dp)
+                                    .clickable {
+                                        showTimePicker { selectedTime ->
+                                            facilityTimeFrom = selectedTime
+
+                                            // Check if the selected TimeFrom is greater than TimeTo
+                                            if (facilityTimeTo.isNotEmpty() && SimpleDateFormat("HH:mm", Locale.getDefault()).parse(
+                                                    facilityTimeFrom)!! > SimpleDateFormat("HH:mm", Locale.getDefault()).parse(facilityTimeTo)!!) {
+                                                // Show error message and reset TimeFrom
+                                                Toast.makeText(context, "To Time cannot be less than Time Date", Toast.LENGTH_SHORT).show()
+                                                facilityTimeFrom = "" // Resetting TimeFrom
+                                            }
+                                        }
+                                    },
+                                enabled = false
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            Text(
+                                text = "To:",
+                                modifier = Modifier.width(25.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+
+                            TextField(
+                                value = facilityTimeTo,
+                                onValueChange = { facilityTimeTo = it },
+                                modifier = Modifier
+                                    .width(125.dp)
+                                    .clickable {
+                                        showTimePicker { selectedTime ->
+                                            facilityTimeTo = selectedTime
+
+                                            // Check if the selected TimeFrom is greater than TimeTo
+                                            if (facilityTimeFrom.isNotEmpty() && SimpleDateFormat("HH:mm", Locale.getDefault()).parse(
+                                                    facilityTimeFrom)!! > SimpleDateFormat("HH:mm", Locale.getDefault()).parse(facilityTimeTo)!!) {
+                                                // Show error message and reset TimeTo
+                                                Toast.makeText(context, "To Time cannot be less than Time Date", Toast.LENGTH_SHORT).show()
+                                                facilityTimeTo = "" // Resetting TimeTo
+                                            }
+                                        }
+                                    },
+                                enabled = false,
+                                readOnly = true
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
                 }
 
                 // Buttons for Submit and Cancel
@@ -541,30 +577,63 @@ fun FacilityFormAdd(
 
                         Button(
                             onClick = {
-                                if (facilityName.isEmpty() || facilityDescription.isEmpty() || facilityType.isEmpty() || facilityMinHeight.isEmpty() || facilitySvCompanion.isEmpty())
+                                // Check if the facility name already exists
+                                val existingFacilityNames = facilities.map { it.facilityName }
+
+                                if (existingFacilityNames.contains(facilityName)) {
+                                    Toast.makeText(context, "Facility already exists.", Toast.LENGTH_SHORT).show()
+                                } else if (!isAvailable)
                                 {
-                                    Toast.makeText(
-                                        context,
-                                        "Please enter facility details.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                } else if (facilityDateTo.isEmpty() || facilityDateFrom.isEmpty()) {
-                                    Toast.makeText(
-                                        context,
-                                        "Please select date.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                } else if (facilityTimeTo.isEmpty() || facilityTimeFrom.isEmpty()) {
-                                    Toast.makeText(
-                                        context,
-                                        "Please select time.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    if (facilityName.isEmpty() || facilityDescription.isEmpty() || facilityType.isEmpty() || facilityMinHeight.isEmpty() || facilitySvCompanion.isEmpty())
+                                    {
+                                        Toast.makeText(
+                                            context,
+                                            "Please enter facility details.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else if (facilityDateTo.isEmpty() || facilityDateFrom.isEmpty()) {
+                                        Toast.makeText(
+                                            context,
+                                            "Please select date.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else if (facilityTimeTo.isEmpty() || facilityTimeFrom.isEmpty()) {
+                                        Toast.makeText(
+                                            context,
+                                            "Please select time.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                    else {
+                                        val resourceId: Int = R.drawable.andromenda_base
+                                        val parsedDateFrom = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(facilityDateFrom)!!
+                                        val parsedDateTo = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(facilityDateTo)!!
+                                        val faciCount = count + 1
+                                        val facilityID = if (faciCount < 10) {
+                                            "F00$faciCount" // For single-digit numbers
+                                        } else {
+                                            "F0$faciCount" // For double-digit numbers
+                                        }
+
+                                        val facility = Facility(
+                                            facilityID = facilityID,
+                                            facilityName = facilityName,
+                                            facilityDesc = facilityDescription,
+                                            facilityType = facilityType,
+                                            facilityMinHeight = facilityMinHeight,
+                                            facilitySvCompanion = facilitySvCompanion,
+                                            facilityImage = resourceId,
+                                            facilityDateFrom = parsedDateFrom,
+                                            facilityDateTo = parsedDateTo,
+                                            facilityTimeFrom = facilityTimeFrom,
+                                            facilityTimeTo = facilityTimeTo,
+                                            facilityAvailability = isAvailable
+                                        )
+                                        onSubmitClick(facility)
+                                    }
                                 }
                                 else {
                                     val resourceId: Int = R.drawable.andromenda_base
-                                    val parsedDateFrom = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(facilityDateFrom)!!
-                                    val parsedDateTo = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(facilityDateTo)!!
                                     val faciCount = count + 1
                                     val facilityID = if (faciCount < 10) {
                                         "F00$faciCount" // For single-digit numbers
@@ -580,10 +649,10 @@ fun FacilityFormAdd(
                                         facilityMinHeight = facilityMinHeight,
                                         facilitySvCompanion = facilitySvCompanion,
                                         facilityImage = resourceId,
-                                        facilityDateFrom = parsedDateFrom,
-                                        facilityDateTo = parsedDateTo,
-                                        facilityTimeFrom = facilityTimeFrom,
-                                        facilityTimeTo = facilityTimeTo,
+                                        facilityDateFrom = dateFormat.parse("2022-01-01")!!,
+                                        facilityDateTo = dateFormat.parse("2028-12-31")!!,
+                                        facilityTimeFrom = "10:00",
+                                        facilityTimeTo = "18:00",
                                         facilityAvailability = isAvailable
                                     )
                                     onSubmitClick(facility)
@@ -603,13 +672,17 @@ fun FacilityFormAdd(
 
 @Composable
 fun FacilityFormUpdate(
+    facilityAvailability: Boolean,
+    facilityDateFromOriginal: String,
+    facilityDateToOriginal: String,
+    facilityTimeFromOriginal: String,
+    facilityTimeToOriginal: String,
     facilityNameUpdate: String,
     onCancelClick: () -> Unit,
     onSubmitClick: (Date, Date, String, String, Boolean, String) -> Unit
 ) {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
-    var facilityName by remember { mutableStateOf("") }
     var isAvailable by remember { mutableStateOf(true) }
     var facilityDateFrom by remember { mutableStateOf("") }
     var facilityDateTo by remember { mutableStateOf("") }
@@ -631,6 +704,10 @@ fun FacilityFormUpdate(
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
         )
+
+        // Set the minimum date to the current date
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis()
+
         datePickerDialog.show()
     }
 
@@ -640,12 +717,20 @@ fun FacilityFormUpdate(
             context,
             { _, hourOfDay, minute ->
                 val selectedTime = String.format("%02d:%02d", hourOfDay, minute)
-                onTimeSelected(selectedTime)
+
+                // Check if the selected time is between 10:00 and 18:00
+                if (hourOfDay in 10..17 || (hourOfDay == 18 && minute == 0)) {
+                    onTimeSelected(selectedTime) // Valid time, proceed with selection
+                } else {
+                    Toast.makeText(context, "Please select a time between 10:00 and 18:00", Toast.LENGTH_SHORT).show()
+                }
             },
             calendar.get(Calendar.HOUR_OF_DAY),
             calendar.get(Calendar.MINUTE),
             true // 24-hour format
         )
+
+        // Show the time picker
         timePickerDialog.show()
     }
 
@@ -696,157 +781,173 @@ fun FacilityFormUpdate(
                     }
                 }
 
-                // Select date
-                item {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Select Date:",
-                            modifier = Modifier.width(150.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                }
-
-                // DatePicker and TimePicker fields
-                // Date picker validation logic
-                item {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "From:",
-                            modifier = Modifier.width(48.dp)
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-
-                        TextField(
-                            value = facilityDateFrom,
-                            onValueChange = { facilityDateFrom = it },
-                            modifier = Modifier
-                                .width(125.dp)
-                                .clickable {
-                                    showDatePicker { selectedDate ->
-                                        facilityDateFrom = selectedDate
-
-                                        // Check if the selected DateFrom is greater than DateTo
-                                        if (facilityDateTo.isNotEmpty() && SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
-                                                facilityDateFrom
-                                            )!! > SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
-                                                facilityDateTo
-                                            )!!) {
-                                            // Show error message and reset DateFrom
-                                            Toast.makeText(context, "To Date cannot be less than From Date", Toast.LENGTH_SHORT).show()
-                                            facilityDateFrom = "" // Resetting DateFrom
-                                        }
-                                    }
-                                },
-                            enabled = false
-                        )
+                if (!isAvailable)
+                {
+                    // Select date
+                    item {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Select Date:",
+                                modifier = Modifier.width(150.dp)
+                            )
+                        }
                         Spacer(modifier = Modifier.width(10.dp))
-
-                        Text(
-                            text = "To:",
-                            modifier = Modifier.width(25.dp)
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-
-                        TextField(
-                            value = facilityDateTo,
-                            onValueChange = { facilityDateTo = it },
-                            modifier = Modifier
-                                .width(125.dp)
-                                .clickable {
-                                    showDatePicker { selectedDate ->
-                                        facilityDateTo = selectedDate
-
-                                        // Check if the selected DateFrom is greater than DateTo
-                                        if (facilityDateFrom.isNotEmpty() && SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
-                                                facilityDateFrom
-                                            )!! > SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
-                                                facilityDateTo
-                                            )!!) {
-                                            // Show error message and reset DateFrom
-                                            Toast.makeText(context, "To Date cannot be less than From Date", Toast.LENGTH_SHORT).show()
-                                            facilityDateTo = "" // Resetting DateFrom
-                                        }
-                                    }
-                                },
-                            enabled = false,
-                            readOnly = true
-                        )
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
 
-// Time picker validation logic
-                item {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "From:",
-                            modifier = Modifier.width(48.dp)
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
+                    // DatePicker and TimePicker fields
+                    // Date picker validation logic
+                    item {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "From:",
+                                modifier = Modifier.width(48.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
 
-                        TextField(
-                            value = facilityTimeFrom,
-                            onValueChange = { facilityTimeFrom = it },
-                            modifier = Modifier
-                                .width(125.dp)
-                                .clickable {
-                                    showTimePicker { selectedTime ->
-                                        facilityTimeFrom = selectedTime
+                            TextField(
+                                value = facilityDateFrom,
+                                onValueChange = { facilityDateFrom = it },
+                                modifier = Modifier
+                                    .width(125.dp)
+                                    .clickable {
+                                        showDatePicker { selectedDate ->
+                                            facilityDateFrom = selectedDate
 
-                                        // Check if the selected TimeFrom is greater than TimeTo
-                                        if (facilityTimeTo.isNotEmpty() && SimpleDateFormat("HH:mm", Locale.getDefault()).parse(
-                                                facilityTimeFrom)!! > SimpleDateFormat("HH:mm", Locale.getDefault()).parse(facilityTimeTo)!!) {
-                                            // Show error message and reset TimeFrom
-                                            Toast.makeText(context, "To Time cannot be less than Time Date", Toast.LENGTH_SHORT).show()
-                                            facilityTimeFrom = "" // Resetting TimeFrom
+                                            // Check if the selected DateFrom is greater than DateTo
+                                            if (facilityDateTo.isNotEmpty() && SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
+                                                    facilityDateFrom
+                                                )!! > SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
+                                                    facilityDateTo
+                                                )!!) {
+                                                // Show error message and reset DateFrom
+                                                Toast.makeText(context, "To Date cannot be less than From Date", Toast.LENGTH_SHORT).show()
+                                                facilityDateFrom = "" // Resetting DateFrom
+                                            }
                                         }
-                                    }
-                                },
-                            enabled = false
-                        )
+                                    },
+                                enabled = false
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            Text(
+                                text = "To:",
+                                modifier = Modifier.width(25.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+
+                            TextField(
+                                value = facilityDateTo,
+                                onValueChange = { facilityDateTo = it },
+                                modifier = Modifier
+                                    .width(125.dp)
+                                    .clickable {
+                                        showDatePicker { selectedDate ->
+                                            facilityDateTo = selectedDate
+
+                                            // Check if the selected DateFrom is greater than DateTo
+                                            if (facilityDateFrom.isNotEmpty() && SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
+                                                    facilityDateFrom
+                                                )!! > SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
+                                                    facilityDateTo
+                                                )!!) {
+                                                // Show error message and reset DateFrom
+                                                Toast.makeText(context, "To Date cannot be less than From Date", Toast.LENGTH_SHORT).show()
+                                                facilityDateTo = "" // Resetting DateFrom
+                                            }
+                                        }
+                                    },
+                                enabled = false,
+                                readOnly = true
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+
+                    // Select time
+                    item {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Select Time:",
+                                modifier = Modifier.width(150.dp)
+                            )
+                        }
                         Spacer(modifier = Modifier.width(10.dp))
-
-                        Text(
-                            text = "To:",
-                            modifier = Modifier.width(25.dp)
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-
-                        TextField(
-                            value = facilityTimeTo,
-                            onValueChange = { facilityTimeTo = it },
-                            modifier = Modifier
-                                .width(125.dp)
-                                .clickable {
-                                    showTimePicker { selectedTime ->
-                                        facilityTimeTo = selectedTime
-
-                                        // Check if the selected TimeFrom is greater than TimeTo
-                                        if (facilityTimeFrom.isNotEmpty() && SimpleDateFormat("HH:mm", Locale.getDefault()).parse(
-                                                facilityTimeFrom)!! > SimpleDateFormat("HH:mm", Locale.getDefault()).parse(facilityTimeTo)!!) {
-                                            // Show error message and reset TimeFrom
-                                            Toast.makeText(context, "To Time cannot be less than Time Date", Toast.LENGTH_SHORT).show()
-                                            facilityTimeTo = "" // Resetting TimeFrom
-                                        }
-                                    }
-                                },
-                            enabled = false,
-                            readOnly = true
-                        )
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
 
+                    // Time picker validation logic
+                    item {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "From:",
+                                modifier = Modifier.width(48.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+
+                            TextField(
+                                value = facilityTimeFrom,
+                                onValueChange = { facilityTimeFrom = it },
+                                modifier = Modifier
+                                    .width(125.dp)
+                                    .clickable {
+                                        showTimePicker { selectedTime ->
+                                            facilityTimeFrom = selectedTime
+
+                                            // Check if the selected TimeFrom is greater than TimeTo
+                                            if (facilityTimeTo.isNotEmpty() && SimpleDateFormat("HH:mm", Locale.getDefault()).parse(
+                                                    facilityTimeFrom)!! > SimpleDateFormat("HH:mm", Locale.getDefault()).parse(facilityTimeTo)!!) {
+                                                // Show error message and reset TimeFrom
+                                                Toast.makeText(context, "To Time cannot be less than Time Date", Toast.LENGTH_SHORT).show()
+                                                facilityTimeFrom = "" // Resetting TimeFrom
+                                            }
+                                        }
+                                    },
+                                enabled = false
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            Text(
+                                text = "To:",
+                                modifier = Modifier.width(25.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+
+                            TextField(
+                                value = facilityTimeTo,
+                                onValueChange = { facilityTimeTo = it },
+                                modifier = Modifier
+                                    .width(125.dp)
+                                    .clickable {
+                                        showTimePicker { selectedTime ->
+                                            facilityTimeTo = selectedTime
+
+                                            // Check if the selected TimeFrom is greater than TimeTo
+                                            if (facilityTimeFrom.isNotEmpty() && SimpleDateFormat("HH:mm", Locale.getDefault()).parse(
+                                                    facilityTimeFrom)!! > SimpleDateFormat("HH:mm", Locale.getDefault()).parse(facilityTimeTo)!!) {
+                                                // Show error message and reset TimeFrom
+                                                Toast.makeText(context, "To Time cannot be less than Time Date", Toast.LENGTH_SHORT).show()
+                                                facilityTimeTo = "" // Resetting TimeFrom
+                                            }
+                                        }
+                                    },
+                                enabled = false,
+                                readOnly = true
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                }
 
                 // Buttons for Submit and Cancel
                 item {
@@ -867,37 +968,68 @@ fun FacilityFormUpdate(
 
                         Button(
                             onClick = {
-                                if (facilityDateTo.isEmpty() || facilityDateFrom.isEmpty()) {
+                                if(facilityAvailability && isAvailable)
+                                {
                                     Toast.makeText(
                                         context,
-                                        "Please select date.",
+                                        "Facility is already available!",
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                } else if (facilityTimeTo.isEmpty() || facilityTimeFrom.isEmpty()) {
+                                }
+                                else if (!facilityAvailability && !isAvailable && facilityDateFromOriginal == facilityDateFrom && facilityDateToOriginal == facilityDateTo && facilityTimeFromOriginal == facilityTimeFrom && facilityTimeToOriginal == facilityTimeTo)
+                                {
                                     Toast.makeText(
                                         context,
-                                        "Please select time.",
+                                        "Facility is already unavailable!",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
                                 else {
-                                    val parsedDateFrom =
-                                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
-                                            facilityDateFrom
-                                        )!!
-                                    val parsedDateTo =
-                                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
-                                            facilityDateTo
-                                        )!!
+                                    if (!isAvailable)
+                                    {
+                                        if (facilityDateTo.isEmpty() || facilityDateFrom.isEmpty()) {
+                                            Toast.makeText(
+                                                context,
+                                                "Please select date.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else if (facilityTimeTo.isEmpty() || facilityTimeFrom.isEmpty()) {
+                                            Toast.makeText(
+                                                context,
+                                                "Please select time.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                        else {
+                                            val parsedDateFrom =
+                                                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
+                                                    facilityDateFrom
+                                                )!!
+                                            val parsedDateTo =
+                                                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(
+                                                    facilityDateTo
+                                                )!!
 
-                                    onSubmitClick(
-                                        parsedDateFrom,
-                                        parsedDateTo,
-                                        facilityTimeFrom,
-                                        facilityTimeTo,
-                                        isAvailable,
-                                        facilityNameUpdate
-                                    )
+                                            onSubmitClick(
+                                                parsedDateFrom,
+                                                parsedDateTo,
+                                                facilityTimeFrom,
+                                                facilityTimeTo,
+                                                isAvailable,
+                                                facilityNameUpdate
+                                            )
+                                        }
+                                    }
+                                    else {
+                                        onSubmitClick(
+                                            dateFormat.parse("2022-01-01")!!,
+                                            dateFormat.parse("2028-12-31")!!,
+                                            "10:00",
+                                            "18:00",
+                                            isAvailable,
+                                            facilityNameUpdate
+                                        )
+                                    }
                                 }
                             },
                             modifier = Modifier.width(100.dp),
@@ -914,6 +1046,9 @@ fun FacilityFormUpdate(
 
 @Composable
 fun FacilityCardManagement(
+    facilityAvailability: Boolean,
+    facilityTimeFrom: String,
+    facilityTimeTo: String,
     facilityName: String,
     facilityImage: Int,
     onEditClick: () -> Unit,
@@ -959,6 +1094,46 @@ fun FacilityCardManagement(
                 fontSize = 20.sp,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
+
+            // Facility Availability Text
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                // Check facility availability and show appropriate text and drawable
+                val (availabilityText, drawable) = when {
+                    facilityAvailability -> Pair("Available (Normal Operating Hours)", R.drawable.check_box)
+                    facilityTimeFrom == "10:00" && facilityTimeTo == "18:00" -> Pair("Unavailable (Whole Day)", R.drawable.cross)
+                    else -> Pair("Unavailable (Few Hours of the Day)", R.drawable.time_filled)
+                }
+
+                // Show the icon (drawable) based on the condition
+                Icon(
+                    painter = painterResource(id = drawable),
+                    contentDescription = null,
+                    tint = when {
+                        facilityAvailability -> Color.Green // Available
+                        !facilityAvailability && facilityTimeFrom != "10:00" && facilityTimeTo != "18:00" -> Color.Yellow // Unavailable, but not full day
+                        else -> Color.Red // Unavailable for the whole day (10:00 to 18:00)
+                    },
+                    modifier = Modifier.size(24.dp)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp)) // Spacing between icon and text
+
+                // Show the text based on availability
+                Text(
+                    text = availabilityText,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = when {
+                        facilityAvailability -> Color.Green // Available
+                        !facilityAvailability && facilityTimeFrom != "10:00" && facilityTimeTo != "18:00" -> Color.Yellow // Unavailable, but not full day
+                        else -> Color.Red // Unavailable for the whole day (10:00 to 18:00)
+                    }
+                )
+            }
+
 
             Spacer(modifier = Modifier.height(10.dp))
 

@@ -83,7 +83,7 @@ fun ReservationDoneScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(
-            onClick = { navController.navigate("reservation_qr_screen/${reservationID}") },
+            onClick = { navController.navigate("reservation_qr_screen/no/${reservationID}") },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA500)),
             modifier = Modifier
                 .width(250.dp)

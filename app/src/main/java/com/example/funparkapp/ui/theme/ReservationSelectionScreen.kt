@@ -61,16 +61,15 @@ fun ReservationSelectionScreen(
 ) {
     val context = LocalContext.current
     val facility by facilityViewModel.getFacilityByName(facilityName).observeAsState()
-
     val qtyMap by purchaseHistoryViewModel.qtyMap.observeAsState(emptyMap()) // Observe qtyMap// Calculate total quantity from qtyMap
     val totalQty = qtyMap.values.sum()
 
     // Update paxList based on totalQty
-    var paxList by remember { mutableStateOf(getPaxList(totalQty)) }
-
-    LaunchedEffect(qtyMap) { // Update paxList when qtyMap changes
-        paxList = getPaxList(totalQty)
-    }
+//    var paxList by remember { mutableStateOf(getPaxList(totalQty)) }
+//
+//    LaunchedEffect(qtyMap) { // Update paxList when qtyMap changes
+//        paxList = getPaxList(totalQty)
+//    }
     // States for spinner selections
     var selectedTime by remember { mutableStateOf("") }
     var selectedPax by remember { mutableStateOf("") }
@@ -79,7 +78,7 @@ fun ReservationSelectionScreen(
     facility?.let { f ->
         // Populate time slots
         if (timeSlots.isEmpty()) {
-            timeSlots = populateTimeSlots(f.facilityTimeFrom, f.facilityTimeTo)
+            timeSlots = populateTimeSlots(f.facilityTimeFrom, f.facilityTimeTo, f.facilityAvailability)
         }
 
         Column(
@@ -178,7 +177,28 @@ fun ReservationSelectionScreen(
                         fontSize = 14.sp
                     )
                 }
+            } else if (!f.facilityAvailability && (f.facilityTimeFrom == "10:00" && f.facilityTimeTo == "18:00")) {
+                // facility unavailable layout
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFCFCBCB))
+                ) {
+                    Text(
+                        text = "Unavailable from ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(f.facilityDateFrom)} to ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(f.facilityDateTo)}",
+                        modifier = Modifier.padding(10.dp),
+                        style = TextStyle(color = Color.Gray),
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp
+                    )
+                }
             } else {
+                val purchaseHistory by purchaseHistoryViewModel.getPurchasedItemByTicketID(TicketIDName.ticketIDName!!).observeAsState()
+                var paxList by remember { mutableStateOf((1..15).map { it.toString() }) }
+
+                purchaseHistory?.let { p ->
+                    paxList = (1..p.qty).map { it.toString() }
+                }
                 // Available layout
                 Column(
                     modifier = Modifier
@@ -257,20 +277,39 @@ fun ReservationSelectionScreen(
 // Function to populate time slots based on the given start and end times
 private fun populateTimeSlots(
     facilityTimeFrom: String,
-    facilityTimeTo: String
+    facilityTimeTo: String,
+    facilityAvailability: Boolean
 ): List<String> {
     val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
     val timeSlots = mutableListOf<String>()
 
+    val defaultStartTime = timeFormat.parse("10:00")!!
+    val defaultEndTime = timeFormat.parse("18:00")!!
+
     val startTime = timeFormat.parse(facilityTimeFrom)
     val endTime = timeFormat.parse(facilityTimeTo)
 
-    if (startTime != null && endTime != null) {
-        var currentTime = startTime.time
-
-        while (currentTime <= endTime.time) {
+    if (facilityAvailability) {
+        // Facility is available; generate all slots between 10:00 and 18:00
+        var currentTime = defaultStartTime.time
+        while (currentTime <= defaultEndTime.time) {
             timeSlots.add(timeFormat.format(Date(currentTime)))
             currentTime += TimeUnit.MINUTES.toMillis(30)
+        }
+    } else {
+        // Facility is unavailable
+        if (facilityTimeFrom != "10:00" && facilityTimeTo != "18:00") {
+            // Generate slots excluding the facility's available time
+            var currentTime = defaultStartTime.time
+            while (currentTime < startTime.time) {
+                timeSlots.add(timeFormat.format(Date(currentTime)))
+                currentTime += TimeUnit.MINUTES.toMillis(30)
+            }
+            currentTime = endTime.time
+            while (currentTime <= defaultEndTime.time) {
+                timeSlots.add(timeFormat.format(Date(currentTime)))
+                currentTime += TimeUnit.MINUTES.toMillis(30)
+            }
         }
     }
 

@@ -6,8 +6,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -18,6 +20,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -36,6 +39,7 @@ fun ReservationQRScreen(
 ) {
     val context = LocalContext.current
     val reservation by reservationViewModel.getReservationById(reservationID).observeAsState()
+    var isFormVisible by remember { mutableStateOf(false) }
 
     reservation?.let { r ->
         Column(
@@ -45,6 +49,19 @@ fun ReservationQRScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Show confirmation dialog if `isFormVisible` is true
+            if (isFormVisible) {
+                ShowCustomConfirmationDeleteDialog(
+                    onCancelClick = { isFormVisible = false },
+                    onSubmitClick = {
+                        reservationViewModel.deleteReservationById(reservationID)
+                        Toast.makeText(context, "Reservation cancelled!", Toast.LENGTH_SHORT).show()
+                        navController.navigate(FunParkScreen.RVViewScreen.name)
+                        isFormVisible = false
+                    }
+                )
+            }
+
             // Reservation ID Title
             Text(
                 text = "Reservation ID: $reservationID",
@@ -131,9 +148,7 @@ fun ReservationQRScreen(
                     // Cancel Button
                     Button(
                         onClick = {
-                            reservationViewModel.deleteReservationById(reservationID)
-                            Toast.makeText(context, "Reservation cancelled!", Toast.LENGTH_SHORT).show()
-                            navController.navigate(FunParkScreen.MainMenu.name)
+                            isFormVisible = true
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA500)),
                         modifier = Modifier
@@ -165,6 +180,80 @@ fun ReservationQRScreen(
             }
 
             Spacer(modifier = Modifier.height(15.dp))
+        }
+    }
+}
+
+@Composable
+fun ShowCustomConfirmationDeleteDialog(
+    onCancelClick: () -> Unit,
+    onSubmitClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .size(250.dp, 200.dp)
+            .background(Color(0xFFFFA500)),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(16.dp)
+                .background(Color(0xFFFFA500)),
+            shape = RoundedCornerShape(12.dp),
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxSize()
+                    .background(Color(0xFFFFA500))
+            ) {
+                // Dialog Message
+                Text(
+                    text = "Confirm want to delete reservation?",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    // "No" Button
+                    Button(
+                        onClick = onCancelClick,
+                        modifier = Modifier
+                            .width(100.dp)
+                            .background(Color.Blue),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Blue
+                        )
+                    ) {
+                        Text(text = "No", color = Color.White)
+                    }
+
+                    // "Yes" Button
+                    Button(
+                        onClick = onSubmitClick,
+                        modifier = Modifier
+                            .width(100.dp)
+                            .background(Color.Blue),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Blue
+                        )
+                    ) {
+                        Text(text = "Yes", color = Color.White)
+                    }
+                }
+            }
         }
     }
 }
