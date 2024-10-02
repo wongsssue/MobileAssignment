@@ -4,23 +4,6 @@ import android.util.Log
 import com.example.funparkapp.R
 import com.google.firebase.firestore.FirebaseFirestore
 
-fun fetchAllLocations() {
-    val firestore = FirebaseFirestore.getInstance()
-    firestore.collection("locations").get()
-        .addOnSuccessListener { querySnapshot ->
-            for (document in querySnapshot.documents) {
-                val location = document.toObject(Location::class.java)
-                location?.let {
-
-                }
-            }
-        }
-        .addOnFailureListener { e ->
-            Log.w("Firestore", "Error fetching locations", e)
-        }
-}
-
-
 fun saveLocationsToFirebase() {
     val firestore = FirebaseFirestore.getInstance()
 

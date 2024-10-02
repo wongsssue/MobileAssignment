@@ -1,7 +1,7 @@
 package com.example.funparkapp.data
-
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
@@ -13,22 +13,64 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 
-class CartSouvenirViewModel(application: Application) : AndroidViewModel(application) {
-    private val cartSouvenirDao = AppDatabase.getDatabase(application).cartSouvenirDao
+
+class CartSouvenirViewModel(application: Application): AndroidViewModel(application)  {
+    private val cartItemDao = AppDatabase.getDatabase(application).cartSouvenirDao
     private val firestore: FirebaseFirestore = Firebase.firestore
 
-    private val _cartSouvenir = MutableStateFlow<List<CartSouvenir>>(emptyList())
-    val cartSouvenir: MutableStateFlow<List<CartSouvenir>> get() = _cartSouvenir
+    private val _cartItems = MutableStateFlow<List<CartSouvenir>>(emptyList())
+    val cartItems: StateFlow<List<CartSouvenir>> get() = _cartItems // Change to StateFlow<List<CartSouvenir>>
 
     private val _allSouvenirs = MutableStateFlow<List<Souvenir>>(emptyList())
     val allSouvenirs: StateFlow<List<Souvenir>> get() = _allSouvenirs
 
-    private val _orderDetails = MutableStateFlow<List<OrderDetail>>(emptyList())
-    val orderDetails: StateFlow<List<OrderDetail>> get() = _orderDetails
+    var selectedItems = mutableStateMapOf<Int, Boolean>() // Assuming souvenirId is Int
 
     init {
-        getCartSouvenir()
+        getCartItems()
         fetchSouvenirs()
+    }
+    fun setSelectAll(checked: Boolean, cartItems: List<CartSouvenir>) {
+        viewModelScope.launch {
+            if (checked) {
+                cartItems.forEach { item ->
+                    selectedItems[item.souvenirId] = true
+                }
+            } else {
+                selectedItems.clear()
+            }
+        }
+    }
+
+    // Toggle selection of an item
+    fun toggleSelection(souvenirId: Int) {
+        if (selectedItems.containsKey(souvenirId)) {
+            selectedItems.remove(souvenirId)
+        } else {
+            selectedItems[souvenirId] = true
+        }
+    }
+
+    // Clear selection
+    fun clearSelection() {
+        selectedItems.clear()
+    }
+
+    fun saveOrderToFirebase(orderDetails: List<OrderDetail>) {
+        val db = FirebaseFirestore.getInstance()
+        val batch = db.batch()
+
+        orderDetails.forEach { orderDetail ->
+            // Create a new document in the "orders" collection
+            val orderRef = db.collection("orders").document() // Automatically generates a document ID
+            batch.set(orderRef, orderDetail) // Assuming OrderDetail is a data class
+        }
+
+        batch.commit().addOnSuccessListener {
+            Log.d("CartViewModel", "Orders saved successfully")
+        }.addOnFailureListener { e ->
+            Log.w("CartViewModel", "Error saving orders", e)
+        }
     }
 
     fun fetchSouvenirs() {
@@ -47,14 +89,10 @@ class CartSouvenirViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-
-
-    private fun updateCartItem(cartSouvenir: CartSouvenir) {
+    private fun updateCartItem(cartItem: CartSouvenir) {
         viewModelScope.launch {
             try {
-                cartSouvenirDao.update(cartSouvenir)
-                _cartSouvenir.value =
-                    _cartSouvenir.value.map { if (it.souvenirId == cartSouvenir.souvenirId) cartSouvenir else it }
+                _cartItems.value = _cartItems.value.map { if (it.souvenirId == cartItem.souvenirId) cartItem else it }
             } catch (e: Exception) {
                 Log.e("CartViewModel", "Error updating cart item: ${e.message}")
             }
@@ -63,12 +101,11 @@ class CartSouvenirViewModel(application: Application) : AndroidViewModel(applica
 
     fun addCartItem(souvenir: Souvenir, quantity: Int) {
         viewModelScope.launch {
-            val existingItem = _cartSouvenir.value.find { it.souvenirId == souvenir.id }
+            val existingItem = _cartItems.value.find { it.souvenirId == souvenir.id }
             if (existingItem != null) {
                 val updatedItem = existingItem.copy(quantity = existingItem.quantity + quantity)
-                _cartSouvenir.value = _cartSouvenir.value.map { item ->
-                    if (item.souvenirId == updatedItem.souvenirId) updatedItem else item
-                }
+                _cartItems.value = _cartItems.value.map { item -> if (item.souvenirId == updatedItem.souvenirId) updatedItem else item }
+                cartItemDao.update(updatedItem) // Update in Room
             } else {
                 val newItem = CartSouvenir(
                     souvenirId = souvenir.id,
@@ -78,56 +115,59 @@ class CartSouvenirViewModel(application: Application) : AndroidViewModel(applica
                     imageResource = souvenir.imageResource,
                     orderDate = "" // Set as needed
                 )
-                _cartSouvenir.value = _cartSouvenir.value + newItem
+                _cartItems.value = _cartItems.value + newItem
+                cartItemDao.insert(newItem) // Insert into Room
             }
         }
     }
 
-    fun getCartSouvenir() {
+    private fun getCartItems() {
         viewModelScope.launch {
             try {
-                _cartSouvenir.value = cartSouvenirDao.getAllCartItems()
+                _cartItems.value = cartItemDao.getAllCartItems() // Fetch from Room, ensure this returns List<CartSouvenir>
             } catch (e: Exception) {
                 Log.e("CartViewModel", "Error fetching cart items: ${e.message}")
-                _cartSouvenir.value = emptyList()
+                _cartItems.value = emptyList()
             }
         }
     }
 
     fun clearCart() {
-        _cartSouvenir.value = emptyList()
-        Log.d("Checkout", "Cart cleared after checkout.")
-    }
-
-    fun increaseQuantity(cartSouvenir: CartSouvenir) {
-        updateItemQuantity(cartSouvenir, 1)
-    }
-
-    fun decreaseQuantity(cartSouvenir: CartSouvenir) {
-        if (cartSouvenir.quantity > 1) {
-            updateItemQuantity(cartSouvenir, -1)
+        viewModelScope.launch {
+            cartItemDao.deleteAll()
+            _cartItems.value = emptyList()
+            Log.d("Checkout", "Cart cleared after checkout.")
         }
     }
 
-    private fun updateItemQuantity(cartSouvenir: CartSouvenir, change: Int) {
+    fun increaseQuantity(cartItem: CartSouvenir) {
+        updateItemQuantity(cartItem, 1)
+    }
+
+    fun decreaseQuantity(cartItem: CartSouvenir) {
+        if (cartItem.quantity > 1) {
+            updateItemQuantity(cartItem, -1)
+        }
+    }
+
+    private fun updateItemQuantity(cartItem: CartSouvenir, change: Int) {
         viewModelScope.launch {
-            val updatedCartItems = _cartSouvenir.value.toMutableList()
-            val index = updatedCartItems.indexOf(cartSouvenir)
+            val updatedCartItems = _cartItems.value.toMutableList()
+            val index = updatedCartItems.indexOf(cartItem)
             if (index != -1) {
-                updatedCartItems[index] =
-                    updatedCartItems[index].copy(quantity = updatedCartItems[index].quantity + change)
-                _cartSouvenir.value = updatedCartItems
-                updateCartItem(updatedCartItems[index]) // Update the DB
+                updatedCartItems[index] = updatedCartItems[index].copy(quantity = updatedCartItems[index].quantity + change)
+                _cartItems.value = updatedCartItems
+                updateCartItem(updatedCartItems[index])
             }
         }
     }
 
-    fun removeCartItem(cartSouvenir: CartSouvenir) {
+    fun removeCartItem(cartItem: CartSouvenir) {
         viewModelScope.launch {
             try {
-                val updatedCartItems = _cartSouvenir.value.toMutableList().apply { remove(cartSouvenir) }
-                _cartSouvenir.value = updatedCartItems
-                cartSouvenirDao.delete(cartSouvenir)
+                val updatedCartItems = _cartItems.value.toMutableList().apply { remove(cartItem) }
+                _cartItems.value = updatedCartItems
+                cartItemDao.delete(cartItem)
             } catch (e: Exception) {
                 Log.e("CartViewModel", "Error removing cart item: ${e.message}")
             }
@@ -136,11 +176,10 @@ class CartSouvenirViewModel(application: Application) : AndroidViewModel(applica
 
     fun selectAll(selectAll: Boolean) {
         viewModelScope.launch {
-            val updatedCartItems =
-                _cartSouvenir.value.map { cartItem -> cartItem.copy(selected = selectAll) }
-            _cartSouvenir.value = updatedCartItems
+            val updatedCartItems = _cartItems.value.map { cartItem -> cartItem.copy(selected = selectAll) }
+            _cartItems.value = updatedCartItems
             updatedCartItems.forEach { updateCartItem(it) }
         }
     }
-
 }
+

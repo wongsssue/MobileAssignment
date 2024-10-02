@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -72,7 +73,7 @@ fun CustomTopBar() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = androidx.compose.ui.graphics.Color(0xFFFFA500))
+            .background(color = androidx.compose.ui.graphics.Color(0xFFFFD580))
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -86,6 +87,7 @@ fun CustomTopBar() {
         )
     }
 }
+
 
 @Composable
 fun ThemeParkMap() {
@@ -168,7 +170,11 @@ fun BottomNavigationBar(onCategorySelected: (Category) -> Unit) {
 
     NavigationBar {
         NavigationBarItem(
-            icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Souvenirs") },
+            icon = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.ShoppingCart, contentDescription = "Souvenirs")
+                }
+            },
             label = { Text("Souvenirs") },
             selected = currentCategory.value == Category.SOUVENIR,
             onClick = {
@@ -176,8 +182,13 @@ fun BottomNavigationBar(onCategorySelected: (Category) -> Unit) {
                 onCategorySelected(Category.SOUVENIR)
             }
         )
+        // Food
         NavigationBarItem(
-            icon = { Icon(Icons.Default.Fastfood, contentDescription = "Food") },
+            icon = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.Fastfood, contentDescription = "Food")
+                }
+            },
             label = { Text("Food") },
             selected = currentCategory.value == Category.FOOD,
             onClick = {
@@ -185,8 +196,13 @@ fun BottomNavigationBar(onCategorySelected: (Category) -> Unit) {
                 onCategorySelected(Category.FOOD)
             }
         )
+        // Games
         NavigationBarItem(
-            icon = { Icon(Icons.Default.VideogameAsset, contentDescription = "Games") },
+            icon = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.VideogameAsset, contentDescription = "Games")
+                }
+            },
             label = { Text("Games") },
             selected = currentCategory.value == Category.GAMES,
             onClick = {
@@ -194,8 +210,13 @@ fun BottomNavigationBar(onCategorySelected: (Category) -> Unit) {
                 onCategorySelected(Category.GAMES)
             }
         )
+        // Services
         NavigationBarItem(
-            icon = { Icon(Icons.Default.Build, contentDescription = "Services") },
+            icon = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.Build, contentDescription = "Services")
+                }
+            },
             label = { Text("Services") },
             selected = currentCategory.value == Category.SERVICES,
             onClick = {
@@ -215,30 +236,57 @@ fun ZoomControls(onZoomIn: () -> Unit, onZoomOut: () -> Unit) {
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Button(onClick = onZoomOut) {
-            Text(text = "-", fontSize = 20.sp)
+        Surface(
+            color = Color(0xFFFFA500),
+            shape = MaterialTheme.shapes.small
+        ) {
+            Button(
+                onClick = onZoomOut,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent
+                )
+            ) {
+                Text(text = "-", fontSize = 20.sp, color = Color.White)
+            }
         }
         Spacer(modifier = Modifier.width(16.dp))
-        Button(onClick = onZoomIn) {
-            Text(text = "+", fontSize = 20.sp)
+        Surface(
+            color = Color(0xFFFFA500),
+            shape = MaterialTheme.shapes.small
+        ) {
+            Button(
+                onClick = onZoomIn,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent
+                )
+            ) {
+                Text(text = "+", fontSize = 20.sp, color = Color.White)
+            }
         }
     }
 }
 
+
 @Composable
-fun ShowLocationDetailsDialog(location: Location, navController: NavHostController, onDismiss: () -> Unit) {
+fun ShowLocationDetailsDialog(
+    location: Location,
+    navController: NavHostController,
+    onDismiss: () -> Unit
+) {
     var showMenu by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
     val foodMenus = mapOf(
         "Food Court 1" to listOf("Burger - RM 10.90 ", "Fries - RM 6.90 ", "Soda - RM 3.90"),
-        "Food Court 2" to listOf("Pizza - RM 10.90", "Pasta - RM 12.90", "Salad- RM 9.90")
+        "Food Court 2" to listOf("Pizza - RM 10.90", "Pasta - RM 12.90", "Salad - RM 9.90")
     )
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Location: ${location.name}", style = MaterialTheme.typography.titleLarge) },
+        title = {
+            Text("Location: ${location.name}", style = MaterialTheme.typography.titleLarge)
+        },
         text = {
             Column(
                 modifier = Modifier
@@ -300,16 +348,18 @@ fun ShowLocationDetailsDialog(location: Location, navController: NavHostControll
                     }
                     location.category == Category.GAMES -> {
                         TextButton(onClick = {
-
+                            val viewOnlyValue = "true"
+                            navController.navigate("${FunParkScreen.RVMainScreen.name}/$viewOnlyValue")
                             onDismiss()
                         }) {
                             Text("Make Reservation")
                         }
                     }
+
                 }
 
-                // Show menu if applicable
                 if (showMenu && location.category == Category.FOOD) {
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text("Menu for ${location.name}:")
                     foodMenus[location.name]?.forEach { menuItem ->
                         Text(menuItem)
@@ -317,6 +367,11 @@ fun ShowLocationDetailsDialog(location: Location, navController: NavHostControll
                 }
             }
         },
-        confirmButton = { Button(onClick = onDismiss) { Text("Close") } }
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
     )
 }
+

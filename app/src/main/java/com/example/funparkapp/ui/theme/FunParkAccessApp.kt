@@ -37,11 +37,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.funparkapp.R
 import com.example.funparkapp.data.AppDatabase
+import com.example.funparkapp.data.CartSouvenirViewModel
 import com.example.funparkapp.data.CartItemRepository
 import com.example.funparkapp.data.CartItemViewModel
 import com.example.funparkapp.data.CartItemViewModelFactory
-import com.example.funparkapp.data.CartSouvenir
-import com.example.funparkapp.data.CartSouvenirViewModel
+import com.example.funparkapp.data.CheckoutViewModel
 import com.example.funparkapp.data.FacilityRepository
 import com.example.funparkapp.data.FacilityViewModel
 import com.example.funparkapp.data.FacilityViewModelFactory
@@ -295,7 +295,7 @@ fun FunParkAccessApp(
                 )
             }
             composable("cart") {
-                val cartItems by cartSouvenirViewModel.cartSouvenir.collectAsState()
+                val cartItems by cartSouvenirViewModel.cartItems.collectAsState()
                 val allSouvenirs by cartSouvenirViewModel.allSouvenirs.collectAsState()
 
                 LaunchedEffect(Unit) {
@@ -306,36 +306,44 @@ fun FunParkAccessApp(
 
                 CartScreen(
                     cartItems = cartItems,
-                    onRemove = { cartItem: CartSouvenir -> cartSouvenirViewModel.removeCartItem(cartItem) },
-                    onIncreaseQuantity = { cartItem: CartSouvenir -> cartSouvenirViewModel.increaseQuantity(cartItem) },
-                    onDecreaseQuantity = { cartItem: CartSouvenir -> cartSouvenirViewModel.decreaseQuantity(cartItem) },
+                    onRemove = { cartItem -> cartSouvenirViewModel.removeCartItem(cartItem) },
+                    onIncreaseQuantity = { cartItem -> cartSouvenirViewModel.increaseQuantity(cartItem) },
+                    onDecreaseQuantity = { cartItem -> cartSouvenirViewModel.decreaseQuantity(cartItem) },
                     onSelectAll = { selectAll -> cartSouvenirViewModel.selectAll(selectAll) },
                     onCheckout = {
-                        val selectedItems = cartItems.filter { it.selected }
-                        navController.navigate("checkout/${Gson().toJson(selectedItems)}/${Gson().toJson(allSouvenirs)}")
+                        navController.navigate("checkout")
                     },
-                    allSouvenirs = allSouvenirs
-                )
+                    allSouvenirs = allSouvenirs,
+                    themeViewModel = themeViewModel)
             }
 
-            composable("checkout/{selectedItems}/{allSouvenirs}") { backStackEntry ->
-                val selectedItemsJson = backStackEntry.arguments?.getString("selectedItems")
-                val allSouvenirsJson = backStackEntry.arguments?.getString("allSouvenirs")
+            composable("checkout") {
+                // Collect state from the ViewModel
+                val selectedItems by cartSouvenirViewModel.cartItems.collectAsState()
+                val allSouvenirs by cartSouvenirViewModel.allSouvenirs.collectAsState()
+                val filteredSelectedItems = selectedItems.filter { it.selected }
 
-                val selectedItems: List<CartSouvenir> = Gson().fromJson(selectedItemsJson, Array<CartSouvenir>::class.java).toList()
-                val allSouvenirs: List<Souvenir> = Gson().fromJson(allSouvenirsJson, Array<Souvenir>::class.java).toList()
+                // Create an instance of the CheckoutViewModel (if not already available)
+                val checkoutViewModel: CheckoutViewModel = viewModel() // Use the appropriate method to get your ViewModel
 
+                // CheckoutScreen with updated parameters
                 CheckoutScreen(
-                    selectedItems = selectedItems,
+                    selectedItems = filteredSelectedItems,
                     allSouvenirs = allSouvenirs,
                     onConfirmPayment = { paymentMethod ->
+                        // TODO: Implement payment confirmation logic
+                        checkoutViewModel.savePaymentMethod(paymentMethod) // Pass the payment method to your ViewModel
                     },
                     onViewHistory = {
-                        navController.navigate("purchase_history") // Navigate to purchase history
+                        // Navigate to purchase history screen
+                        navController.navigate("purchase_history")
                     },
                     onBackToHome = {
-                        navController.navigate("map") // Navigate back to home
-                    }
+                        // Navigate back to the map screen
+                        navController.navigate("map")
+                    },
+                    themeViewModel = themeViewModel,
+                    checkoutViewModel = checkoutViewModel
                 )
             }
 
@@ -349,7 +357,6 @@ fun FunParkAccessApp(
             composable("purchase_history") {
                 PurchaseSouvenirHistoryScreen(
 
-                    onBackToHome = { navController.popBackStack("map", false) } // Navigate back to the map
                 )
             }
 

@@ -10,17 +10,17 @@ import androidx.room.Update
 @Dao
 interface CartSouvenirDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(cartSouvenir: CartSouvenir)
+    suspend fun insert(cartItem: CartSouvenir)
 
     @Update
-    suspend fun update(cartSouvenir: CartSouvenir)
+    suspend fun update(cartItem: CartSouvenir)
 
     @Delete
-    suspend fun delete(cartSouvenir: CartSouvenir)
+    suspend fun delete(cartItem: CartSouvenir)
 
     @Query("SELECT * FROM cart_souvenirs")
     suspend fun getAllCartItems(): List<CartSouvenir>
 
-    @Query("SELECT * FROM cart_souvenirs WHERE selected = 1")
-    suspend fun getSelectedItems(): List<CartSouvenir> // Fetch only selected items
+    @Query("DELETE FROM cart_souvenirs")
+    suspend fun deleteAll()
 }

@@ -67,8 +67,4 @@ class SouvenirViewModel : ViewModel() {
         _searchText.value = newText
     }
 
-    fun addToCart(souvenir: Souvenir, quantity: Int) {
-        // Logic to add to cart...
-        _cartItemCount.value += quantity
-    }
 }

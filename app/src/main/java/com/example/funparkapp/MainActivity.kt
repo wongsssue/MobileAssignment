@@ -5,53 +5,69 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.ViewModelProvider
-import com.example.funparkapp.data.CartSouvenirViewModel
 import com.example.funparkapp.data.DataInitializer
 import com.example.funparkapp.data.MapViewModel
 import com.example.funparkapp.data.SouvenirViewModel
 import com.example.funparkapp.data.ThemeViewModel
-import com.example.funparkapp.data.saveLocationsToFirebase
-import androidx.lifecycle.lifecycleScope
 import com.example.funparkapp.data.AppDatabase
-import com.example.funparkapp.data.UserType
+import com.example.funparkapp.data.CartSouvenirViewModel // Ensure the name is corrected
+import com.example.funparkapp.data.saveLocationsToFirebase
 import com.example.funparkapp.ui.theme.FunParkAccessApp
 import com.example.funparkapp.ui.theme.FunParkAppTheme
 import com.google.firebase.FirebaseApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
-
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var souvenirViewModel: SouvenirViewModel
-    private lateinit var cartSouvenirViewModel: CartSouvenirViewModel
+    private lateinit var cartSouvenirViewModel: CartSouvenirViewModel // Corrected to CartSouvenirViewModel
     private lateinit var themeViewModel: ThemeViewModel
-    private lateinit var mapViewModel: MapViewModel // Declare MapViewModel
-
+    private lateinit var mapViewModel: MapViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        DataInitializer.addSouvenirsToFirestore()
-        saveLocationsToFirebase()
-
-        souvenirViewModel = ViewModelProvider(this).get(SouvenirViewModel::class.java)
-        cartSouvenirViewModel = ViewModelProvider(this).get(CartSouvenirViewModel::class.java)
-        themeViewModel = ViewModelProvider(this).get(ThemeViewModel::class.java)
-        mapViewModel = ViewModelProvider(this).get(MapViewModel::class.java)
-
         enableEdgeToEdge()
         FirebaseApp.initializeApp(this)
+
+        initializeViewModels()
+        initializeData()
+
         setContent {
             FunParkAppTheme {
-               FunParkAccessApp(
-                   souvenirViewModel = souvenirViewModel,
-                   cartSouvenirViewModel = cartSouvenirViewModel,
-                   themeViewModel = themeViewModel,
-                   mapViewModel = mapViewModel,
-               )
+                FunParkAccessApp(
+                    souvenirViewModel = souvenirViewModel,
+                    cartSouvenirViewModel = cartSouvenirViewModel,
+                    themeViewModel = themeViewModel,
+                    mapViewModel = mapViewModel,
+                )
             }
         }
+    }
+
+    private fun initializeViewModels() {
+        souvenirViewModel = ViewModelProvider(this).get(SouvenirViewModel::class.java)
+        cartSouvenirViewModel = ViewModelProvider(this).get(CartSouvenirViewModel::class.java) // Ensure correct naming
+        themeViewModel = ViewModelProvider(this).get(ThemeViewModel::class.java)
+        mapViewModel = ViewModelProvider(this).get(MapViewModel::class.java)
+    }
+
+    private fun initializeData() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Initialize Firestore data
+                DataInitializer.addSouvenirsToFirestore()
+                saveLocationsToFirebase()
+            } catch (e: Exception) {
+                // Handle any exceptions that might occur during initialization
+                e.printStackTrace() // Consider logging this in a better way for production
+            }
+        }
+    }
+}
+
 
 //        lifecycleScope.launch {
 //            val appDatabase = AppDatabase.getDatabase(this@MainActivity)
@@ -76,7 +92,7 @@ class MainActivity : ComponentActivity() {
 //            userDao.insert(adminUser)
 //            userDao.insert(testUser)
 //        }
-    }
-}
+//}
+//}
 
 

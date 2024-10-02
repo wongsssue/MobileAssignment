@@ -22,17 +22,17 @@ class MapViewModel : ViewModel() {
         Location("Independence", Category.GAMES, 250, 220, R.drawable.independence_day),
         Location("Ice Age", Category.GAMES, 500, 60, R.drawable.ice_age),
         Location("Invasion Apes", Category.GAMES, 500, 60, R.drawable.invasion_apes),
-        Location("Carousel", Category.GAMES, 180, 610, R.drawable.carousel),
+        Location("Carousel", Category.GAMES, 195, 610, R.drawable.carousel),
         Location("Pirate Ship", Category.GAMES, 100, 540, R.drawable.pirate_ship),
         Location("Roller Coaster", Category.GAMES, 200, 40, R.drawable.roller_coaster_new),
         Location("Horrible Game", Category.GAMES, 270, 585, R.drawable.horrible_game),
-        Location("Water Ride", Category.GAMES, 240, 685, R.drawable.water_ride),
+        Location("Water Ride", Category.GAMES, 240, 715, R.drawable.water_ride),
         Location("Roller Coaster Kids", Category.GAMES, 240, 385, R.drawable.roller_coaster_new),
         Location("Souvenir Shop 1", Category.SOUVENIR, 150, 550, R.drawable.souvenir1),
         Location("Souvenir Shop 2", Category.SOUVENIR, 220, 270, R.drawable.souvenir2),
-        Location("First Aid", Category.SERVICES, 140, 610, R.drawable.first_aid),
+        Location("First Aid", Category.SERVICES, 138, 620, R.drawable.first_aid),
         Location("Help Desk", Category.SERVICES, 90, 260, R.drawable.help),
-        Location("Toilet", Category.SERVICES, 260, 260, R.drawable.toilet)
+        Location("Toilet", Category.SERVICES, 270, 260, R.drawable.toilet)
     )
 
     init {

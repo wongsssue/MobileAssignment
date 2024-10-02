@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -316,6 +318,9 @@ fun ModifySouvenirScreen(
     val souvenirs by souvenirViewModel.souvenirList.collectAsState()
     var isModifying by remember { mutableStateOf(false) }
 
+    // Validation error state
+    var errorMessage by remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -393,10 +398,22 @@ fun ModifySouvenirScreen(
                     colors = TextFieldDefaults.textFieldColors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
-
                     ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), // Ensure only number input
                     textStyle = TextStyle(fontSize = 20.sp),
                     shape = RoundedCornerShape(12.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Display error message if validation fails
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
 
@@ -408,12 +425,21 @@ fun ModifySouvenirScreen(
             ) {
                 Button(
                     onClick = {
-                        souvenirViewModel.modifySouvenir(
-                            souvenir.copy(name = souvenirName, price = souvenirPrice.toDouble())
-                        )
-                        navController.popBackStack()
-                        isModifying = false
-                        selectedSouvenir = null
+                        // Validate input
+                        if (souvenirName.isBlank()) {
+                            errorMessage = "Souvenir name cannot be empty"
+                        } else if (souvenirPrice.isBlank() || souvenirPrice.toDoubleOrNull() == null) {
+                            errorMessage = "Please enter a valid price"
+                        } else {
+                            // If valid, modify souvenir
+                            souvenirViewModel.modifySouvenir(
+                                souvenir.copy(name = souvenirName, price = souvenirPrice.toDouble())
+                            )
+                            navController.popBackStack()
+                            isModifying = false
+                            selectedSouvenir = null
+                            errorMessage = "" // Clear error message after success
+                        }
                     },
                     modifier = Modifier
                         .weight(1f)
@@ -428,6 +454,7 @@ fun ModifySouvenirScreen(
                     onClick = {
                         isModifying = false
                         selectedSouvenir = null
+                        errorMessage = "" // Clear error message when canceling
                     },
                     modifier = Modifier
                         .weight(1f)
@@ -441,7 +468,6 @@ fun ModifySouvenirScreen(
         }
     }
 }
-
 
 
 

@@ -13,16 +13,6 @@ class SouvenirRepository {
         souvenir.firestoreId = documentReference.id
     }
 
-    suspend fun getSouvenirs(): List<Souvenir> {
-        return try {
-            val documents = souvenirCollection.get().await()
-            documents.map { document ->
-                document.toObject(Souvenir::class.java).copy(firestoreId = document.id)
-            }
-        } catch (exception: Exception) {
-            emptyList()
-        }
-    }
 
     suspend fun deleteSouvenir(souvenir: Souvenir) {
         souvenirCollection.document(souvenir.firestoreId).delete().await()

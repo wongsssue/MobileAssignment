@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.funparkapp.data.Order
 import com.example.funparkapp.data.PurchaseSouvenirHistoryViewModel
@@ -18,7 +19,6 @@ import com.example.funparkapp.data.PurchaseSouvenirHistoryViewModel
 @Composable
 fun PurchaseSouvenirHistoryScreen(
     viewModel: PurchaseSouvenirHistoryViewModel = viewModel(),
-    onBackToHome: () -> Unit
 ) {
     val orders = viewModel.orderDetails.collectAsState(initial = emptyList())
 
@@ -26,11 +26,6 @@ fun PurchaseSouvenirHistoryScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Purchase History") },
-                navigationIcon = {
-                    IconButton(onClick = {  }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
             )
         }
     ) { paddingValues ->
@@ -54,17 +49,21 @@ fun PurchaseSouvenirHistoryScreen(
 
 @Composable
 fun OrderItem(order: Order) {
+    val taxRate = 0.05
+    val totalPriceWithTax = order.totalPrice * (1 + taxRate)
+
+    val lightOrange = Color(0xFFFFC107)
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(8.dp),
+        colors = CardDefaults.cardColors(containerColor = lightOrange) // Set the background color
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text("Order ID: ${order.id}", style = MaterialTheme.typography.titleMedium)
             Text("Order Date: ${order.orderDate}", style = MaterialTheme.typography.bodyLarge)
-            Text("Total Price: RM ${order.totalPrice}", style = MaterialTheme.typography.bodyLarge)
+            Text("Total Price: RM ${"%.2f".format(totalPriceWithTax)}", style = MaterialTheme.typography.bodyLarge)
 
-            // Displaying items in the order
             order.items.forEach { item ->
                 Text("Item: ${item.name}, Quantity: ${item.quantity}, Price: RM ${item.price}", style = MaterialTheme.typography.bodyMedium)
             }

@@ -3,7 +3,6 @@ package com.example.funparkapp.data
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.funparkapp.data.Order
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,8 +38,17 @@ class PurchaseSouvenirHistoryViewModel : ViewModel() {
         db.collection("orders")
             .get()
             .addOnSuccessListener { documents ->
+                documents.forEach { document ->
+                    Log.d("FirestoreOrder", "Document ID: ${document.id}, Data: ${document.data}")
+                }
+
                 val orders = documents.mapNotNull { document ->
-                    document.toObject(Order::class.java)
+                    try {
+                        document.toObject(Order::class.java)
+                    } catch (e: Exception) {
+                        Log.e("DeserializationError", "Failed to deserialize document ${document.id}: ${e.message}")
+                        null
+                    }
                 }
                 onOrdersFetched(orders)
             }
@@ -55,12 +63,12 @@ class PurchaseSouvenirHistoryViewModel : ViewModel() {
             val totalFee = calculateTotalFee(cartItems)
             val currentDate = getCurrentDate()
 
-            println("Total Fee: $totalFee")
-            println("Current Date: $currentDate")
+            Log.d("CartInfo", "Total Fee: $totalFee")
+            Log.d("CartInfo", "Current Date: $currentDate")
         }
     }
-    private suspend fun getCartItems(): List<CartItem> {
 
+    private suspend fun getCartItems(): List<CartItem> {
         return emptyList()
     }
 
