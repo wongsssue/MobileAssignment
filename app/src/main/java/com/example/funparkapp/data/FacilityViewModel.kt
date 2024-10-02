@@ -13,7 +13,6 @@ import java.util.Locale
 class FacilityViewModel(private val repository: FacilityRepository) : ViewModel() {
 
     val allFacility: LiveData<List<Facility>> = repository.allFacility
-    val allActiveFacility: LiveData<List<Facility>> = repository.allActiveFacility
 
     init {
         viewModelScope.launch {
@@ -23,7 +22,6 @@ class FacilityViewModel(private val repository: FacilityRepository) : ViewModel(
 
     private suspend fun initializeData() {
         val facilities = repository.allFacility.value
-        val activeFacilities = repository.allActiveFacility.value
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
         if (facilities.isNullOrEmpty()) {

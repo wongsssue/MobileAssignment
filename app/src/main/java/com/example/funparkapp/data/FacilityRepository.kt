@@ -7,7 +7,6 @@ import java.util.Date
 class FacilityRepository(private val facilityDao: FacilityDao) {
 
     val allFacility: LiveData<List<Facility>> = facilityDao.getAllFacilities()
-    val allActiveFacility: LiveData<List<Facility>> = facilityDao.getAllActiveFacilities()
 
     suspend fun insertFacility(facility: Facility) {
         facilityDao.insertFacility(facility)

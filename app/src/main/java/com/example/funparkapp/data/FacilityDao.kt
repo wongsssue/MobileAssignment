@@ -18,26 +18,6 @@ interface FacilityDao {
     @Query("SELECT * FROM facilities")
     fun getAllFacilities(): LiveData<List<Facility>>
 
-    @Query(
-        """
-    SELECT * FROM facilities
-WHERE (
-    facilityAvailability = 1 
-    AND DATE('now') BETWEEN 
-    DATE(facilityDateFrom / 1000, 'unixepoch') 
-    AND DATE(facilityDateTo / 1000, 'unixepoch')
-) 
-OR (
-    facilityAvailability = 0 
-    AND DATE('now') NOT BETWEEN 
-    DATE(facilityDateFrom / 1000, 'unixepoch') 
-    AND DATE(facilityDateTo / 1000, 'unixepoch')
-)
-    """
-    )
-    fun getAllActiveFacilities(): LiveData<List<Facility>>
-
-
     @Query("DELETE FROM facilities WHERE facilityName = :name")
     suspend fun deleteFacilityByName(name: String)
 

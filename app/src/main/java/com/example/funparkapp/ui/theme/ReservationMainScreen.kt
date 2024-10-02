@@ -31,7 +31,7 @@ fun ReservationMainScreen(
     facilityViewModel: FacilityViewModel,
     navController: NavHostController,
 ) {
-    val facilities by facilityViewModel.allActiveFacility.observeAsState(emptyList())
+    val facilities by facilityViewModel.allFacility.observeAsState(emptyList())
 
     Column(
         modifier = Modifier
